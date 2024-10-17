@@ -7,11 +7,25 @@ const {checkConnection} = require('./config/config');
 // Initialize express app
 const app = express();
 
+// Use middleware to serve static files from the "views" directory
+app.use("/views", express.static(__dirname + "/views"));
+
+
+//initialize view engine
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 // Basic Route to Test Server
 app.get('/', (req, res) => {
-  res.send('Welcome to the Campus Incident Management System API!');
+  res.render('index');
 });
+app.get('/signin', (req,res) =>{
+  res.render('signin');
+})
 
+app.get('/signup', (req,res) =>{
+  res.render('signup');
+})
 // Set the server to listen on a specific port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async() => {
