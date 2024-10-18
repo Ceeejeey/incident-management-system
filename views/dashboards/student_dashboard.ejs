@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Incident Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">    <link rel="stylesheet" href="styles.css"> <!-- Custom styles -->
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+}
+
+#wrapper {
+    display: flex;
+    width: 100%;
+}
+
+#sidebar-wrapper {
+    width: 250px;
+}
+
+#page-content-wrapper {
+    flex-grow: 1;
+}
+
+.navbar {
+    padding: 1rem;
+}
+
+    </style>
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-light border-right" id="sidebar-wrapper">
+            <div class="sidebar-heading">Dashboard</div>
+            <div class="list-group list-group-flush">
+                <a href="#user-management" class="list-group-item list-group-item-action bg-light">User Management</a>
+                <a href="#incident-reporting" class="list-group-item list-group-item-action bg-light">Incident Reporting</a>
+                <a href="#incident-tracking" class="list-group-item list-group-item-action bg-light">Incident Tracking</a>
+                <a href="#notifications" class="list-group-item list-group-item-action bg-light">Notifications</a>
+                <a href="#emergency-contacts" class="list-group-item list-group-item-action bg-light">Emergency Contacts</a>
+                <a href="#communication-tools" class="list-group-item list-group-item-action bg-light">Communication Tools</a>
+                <a href="#incident-documentation" class="list-group-item list-group-item-action bg-light">Incident Documentation</a>
+                <a href="#training-modules" class="list-group-item list-group-item-action bg-light">Training Modules</a>
+                <a href="#feedback" class="list-group-item list-group-item-action bg-light">Feedback</a>
+                <a href="#reporting-analytics" class="list-group-item list-group-item-action bg-light">Reporting & Analytics</a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid">
+                <h1 class="mt-4">Welcome to the Campus Incident Management Dashboard</h1>
+                <!-- Sections for each functionality go here -->
+                <div id="user-management">
+                    <!-- User Management Content -->
+                </div>
+                <div id="incident-reporting">
+                    <!-- Incident Reporting Content -->
+                </div>
+                <div id="incident-tracking">
+                    <!-- Incident Tracking Content -->
+                </div>
+                <div id="notifications">
+                    <!-- Notifications Content -->
+                </div>
+                <div id="emergency-contacts">
+                    <!-- Emergency Contacts Content -->
+                </div>
+                <div id="communication-tools">
+                    <!-- Communication Tools Content -->
+                </div>
+                <div id="incident-documentation">
+                    <!-- Incident Documentation Content -->
+                </div>
+                <div id="training-modules">
+                    <!-- Training Modules Content -->
+                </div>
+                <div id="feedback">
+                    <!-- Feedback Content -->
+                </div>
+                <div id="reporting-analytics">
+                    <!-- Reporting & Analytics Content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="scripts.js"></script> <!-- Custom scripts -->
+</body>
+</html>
