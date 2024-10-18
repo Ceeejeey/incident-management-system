@@ -3,29 +3,31 @@ require('dotenv').config();
 // Import required modules
 const express = require('express');
 const {checkConnection} = require('./config/config');
+const bodyParser = require("body-parser");
+
 
 // Initialize express app
 const app = express();
 
+// Middleware to parse form data
+app.use(bodyParser.urlencoded({ extended: true }));
+// Cookie and JSON parsing middleware
+app.use(express.json());
+
 // Use middleware to serve static files from the "views" directory
 app.use("/views", express.static(__dirname + "/views"));
+
+
 
 
 //initialize view engine
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
-// Basic Route to Test Server
-app.get('/', (req, res) => {
-  res.render('index');
-});
-app.get('/signin', (req,res) =>{
-  res.render('signin');
-})
+//uses the routes
+app.use("/", require("./routes/pages"));
+app.use("/api", require("./controllers/authContoller"));
 
-app.get('/signup', (req,res) =>{
-  res.render('signup');
-})
 // Set the server to listen on a specific port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async() => {
