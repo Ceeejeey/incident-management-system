@@ -18,6 +18,7 @@ const authenticateToken = (req, res, next) => {
         req.user = user;
         next(); // Proceed to the dashboard or next middleware
     });
- };
+};
  
+
 module.exports = authenticateToken;

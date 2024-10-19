@@ -1,109 +1,234 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Incident Management Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">    <link rel="stylesheet" href="styles.css"> <!-- Custom styles -->
-    <style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+   
+   <style>
         body {
-    font-family: 'Arial', sans-serif;
-}
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 70px;
+        }
 
-#wrapper {
-    display: flex;
-    width: 100%;
-}
+        
+        .navbar {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1030;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-#sidebar-wrapper {
-    width: 250px;
-}
+        #wrapper {
+            display: flex;
+            width: 100%;
+        }
 
-#page-content-wrapper {
-    flex-grow: 1;
-}
+        #sidebar-wrapper {
+            width: 250px;
+            background-color: #343a40;
+            min-height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            z-index: 1000;
+        }
 
-.navbar {
-    padding: 1rem;
-}
+        #page-content-wrapper {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 250px;
+            margin-top: 56px;
+        }
 
+        #sidebar-wrapper .sidebar-heading {
+            font-size: 1.5rem;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            background-color: #343a40;
+            color: white;
+            padding: 0.75rem 1.25rem;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #495057;
+        }
+
+        .greeting {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .container-fluid h1 {
+            font-weight: bold;
+            color: #343a40;
+        }
+
+
+        .navbar-light .navbar-nav .nav-link {
+            color: #343a40;
+            margin-left: 15px;
+        }
+
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+
+        .dropdown-menu {
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+
+        .search-bar {
+            width: 200px;
+            border-radius: 4px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #343a40;
+        }
     </style>
 </head>
+
 <body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <h3 class="navbar-brand ms-3">Student Dashboard</h3>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Messages <span class="badge bg-primary">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
+                        <li><a class="dropdown-item" href="#">Message 1</a></li>
+                        <li><a class="dropdown-item" href="#">Message 2</a></li>
+                        <li><a class="dropdown-item" href="#">Message 3</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-center" href="#">See All Messages</a></li>
+                    </ul>
+                </li>
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Notifications <span class="badge bg-warning">5</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                        <li><a class="dropdown-item" href="#">Notification 1</a></li>
+                        <li><a class="dropdown-item" href="#">Notification 2</a></li>
+                        <li><a class="dropdown-item" href="#">Notification 3</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-center" href="#">See All Notifications</a></li>
+                    </ul>
+                </li>
+
+
+                <form class="d-flex ms-3">
+                    <input class="form-control search-bar me-2" type="search" placeholder="Search..."
+                        aria-label="Search">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <img src="path/to/profile-pic.jpg" alt="Profile" class="rounded-circle" width="30" height="30">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="d-flex" id="wrapper">
         <!-- Sidebar -->
-        <div class="bg-light border-right" id="sidebar-wrapper">
+        <div class="bg-dark" id="sidebar-wrapper">
             <div class="sidebar-heading">Dashboard</div>
             <div class="list-group list-group-flush">
-                <a href="#user-management" class="list-group-item list-group-item-action bg-light">User Management</a>
-                <a href="#incident-reporting" class="list-group-item list-group-item-action bg-light">Incident Reporting</a>
-                <a href="#incident-tracking" class="list-group-item list-group-item-action bg-light">Incident Tracking</a>
-                <a href="#notifications" class="list-group-item list-group-item-action bg-light">Notifications</a>
-                <a href="#emergency-contacts" class="list-group-item list-group-item-action bg-light">Emergency Contacts</a>
-                <a href="#communication-tools" class="list-group-item list-group-item-action bg-light">Communication Tools</a>
-                <a href="#incident-documentation" class="list-group-item list-group-item-action bg-light">Incident Documentation</a>
-                <a href="#training-modules" class="list-group-item list-group-item-action bg-light">Training Modules</a>
-                <a href="#feedback" class="list-group-item list-group-item-action bg-light">Feedback</a>
-                <a href="#reporting-analytics" class="list-group-item list-group-item-action bg-light">Reporting & Analytics</a>
+                <a href="#incident-reporting" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-exclamation-circle me-2"></i> Incident Reporting
+                </a>
+                <a href="#incident-tracking" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-chart-line me-2"></i> Incident Tracking
+                </a>
+                <a href="#notifications" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-bell me-2"></i> Notifications
+                </a>
+                <a href="#emergency-contacts" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-phone-alt me-2"></i> Emergency Contacts
+                </a>
+                <a href="#communication-tools" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-comments me-2"></i> Communication Tools
+                </a>
+                <a href="#training-modules" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-book-reader me-2"></i> Training Modules
+                </a>
+                <a href="#feedback" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-comment-dots me-2"></i> Feedback
+                </a>
             </div>
         </div>
+        
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
             <div class="container-fluid">
-                <h1 class="mt-4">Welcome to the Campus Incident Management Dashboard</h1>
-                <!-- Sections for each functionality go here -->
-                <div id="user-management">
-                    <!-- User Management Content -->
+                <!-- Greeting message -->
+                <div class="greeting">
+                    <h2>Hello, <%= user.firstName %>!</h2>
+                    <p>Welcome back to your dashboard. Here you can manage your incidents and stay updated.</p>
                 </div>
-                <div id="incident-reporting">
-                    <!-- Incident Reporting Content -->
-                </div>
-                <div id="incident-tracking">
-                    <!-- Incident Tracking Content -->
-                </div>
-                <div id="notifications">
-                    <!-- Notifications Content -->
-                </div>
-                <div id="emergency-contacts">
-                    <!-- Emergency Contacts Content -->
-                </div>
-                <div id="communication-tools">
-                    <!-- Communication Tools Content -->
-                </div>
-                <div id="incident-documentation">
-                    <!-- Incident Documentation Content -->
-                </div>
-                <div id="training-modules">
-                    <!-- Training Modules Content -->
-                </div>
-                <div id="feedback">
-                    <!-- Feedback Content -->
-                </div>
-                <div id="reporting-analytics">
-                    <!-- Reporting & Analytics Content -->
-                </div>
+
+                <h1 class="mt-4">Campus Incident Management Dashboard</h1>
+
+                <div id="incident-reporting"></div>
+                <div id="incident-tracking"></div>
+                <div id="notifications"></div>
+                <div id="emergency-contacts"></div>
+                <div id="communication-tools"></div>
+                <div id="training-modules"></div>
+                <div id="feedback"></div>
+
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="scripts.js"></script> <!-- Custom scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
