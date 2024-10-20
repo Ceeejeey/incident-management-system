@@ -114,37 +114,41 @@
 
         const handleSignIn = async (email, password) => {
             try {
-                const response = await fetch(`${baseURL}/api/signin`, {
-                    method: 'POST',
-                    credentials: 'include', // Ensures cookies (including refreshToken) are sent with requests
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password }),
-                });
+            const response = await fetch(`${baseURL}/api/signin`, {
+                method: 'POST',
+                credentials: 'include', // Ensures cookies (including refreshToken) are sent with requests
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
 
-                console.log(response);
-
-                // Check if response is OK
-                if (response.ok) {
-                    window.location.href = '/dashboards/student_dashboard';
+            // Check if response is OK
+            if (response.ok) {
+                const user = await response.json();
+                
+                if (user.user.role === 'staff') {
+                window.location.href = '/dashboards/staff_dashboard';
                 } else {
-                    const contentType = response.headers.get('content-type');
-
-                    // Check if the content type is JSON
-                    if (contentType && contentType.includes('application/json')) {
-                        const error = await response.json();
-                        throw new Error(error.message);
-                    } else {
-                        const errorText = await response.text();  // Capture raw text response for better debugging
-                        console.log("Raw response: ", errorText);  // Log the full raw response
-                        
-                        throw new Error('Unexpected response format');
-                    }
+                window.location.href = '/dashboards/student_dashboard';
                 }
+            } else {
+                const contentType = response.headers.get('content-type');
+
+                // Check if the content type is JSON
+                if (contentType && contentType.includes('application/json')) {
+                const error = await response.json();
+                throw new Error(error.message);
+                } else {
+                const errorText = await response.text();  // Capture raw text response for better debugging
+                console.log("Raw response: ", errorText);  // Log the full raw response
+                
+                throw new Error('Unexpected response format');
+                }
+            }
             } catch (error) {
-                console.error('Sign-in error:', error);
-                alert('Sign-in failed: ' + error.message);
+            console.error('Sign-in error:', error);
+            alert('Sign-in failed: ' + error.message);
             }
         };
 

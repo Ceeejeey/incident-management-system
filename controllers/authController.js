@@ -6,12 +6,12 @@ const bcrypt = require('bcryptjs');
 
 // Sign-up logic
 router.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
+    const { name ,email, role ,password } = req.body;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await pool.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
-        res.send('User registered successfully');
+        await pool.query('INSERT INTO users (name ,email,role, password) VALUES (?, ?, ? ,?)', [name , email, role, hashedPassword]);
+        res.redirect('/signin');
     } catch (err) {
         console.error('Error during signup:', err);
         res.status(500).send('Error while signing up');
@@ -58,8 +58,8 @@ router.post('/signin', async (req, res) => {
         }
 
         // No valid refresh token found, issue new tokens
-        const accessToken = jwt.sign({ id: user.id, email: user.email , name: user.name}, process.env.JWT_SECRET, { expiresIn: '15m' });
-        const refreshToken = jwt.sign({ id: user.id, email: user.email , name: user.name}, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+        const accessToken = jwt.sign({ id: user.id, email: user.email , name: user.name , role:user.role}, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign({ id: user.id, email: user.email , name: user.name , role:user.role}, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
         // Store refresh token securely in cookies
         res.cookie('refreshToken', refreshToken, {

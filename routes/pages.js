@@ -15,7 +15,19 @@ router.get('/signup', (req, res) => {
     res.render('signup');
 })
 
-// Dashboard route
+//staff Dashboard route
+router.get('/dashboards/staff_dashboard', authenticateToken, (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized: No user information found' });
+    }
+    
+    console.log(req.user.role);
+    res.render('dashboards/staff_dashboard', {
+        user: req.user // Pass user info to the dashboard
+    });
+});
+
+//student Dashboard route
 router.get('/dashboards/student_dashboard', authenticateToken, (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized: No user information found' });
