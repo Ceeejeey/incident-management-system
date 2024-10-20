@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../config/config');
 const bcrypt = require('bcryptjs');
 
-// Sign-up logic (assuming this is above the sign-in logic)
+// Sign-up logic
 router.post('/signup', async (req, res) => {
     const { email, password } = req.body;
 
@@ -25,46 +25,56 @@ router.post('/signin', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
         const user = rows[0];
+        console.log('User:', user);
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
+        // Verify password
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match:', isMatch);
 
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Check for an existing refresh token in cookies
+        // Check for existing refresh token in cookies
         const existingRefreshToken = req.cookies.refreshToken;
+        console.log('Existing refresh token:', existingRefreshToken);
 
         if (existingRefreshToken) {
             try {
-                // Verify the existing refresh token
-                jwt.verify(existingRefreshToken, process.env.JWT_REFRESH_SECRET);
+                // Verify existing refresh token
+                const decoded = jwt.verify(existingRefreshToken, process.env.JWT_REFRESH_SECRET);
 
-                // If the token is valid, redirect to dashboard without generating a new token
-                return res.redirect('/dashboards/student_dashboard');
+                // If the token is valid, no need to generate a new one
+                console.log('Valid refresh token, redirecting to dashboard...');
+                return res.json({ existingRefreshToken, user });
             } catch (err) {
-                // If the token is expired or invalid, proceed with refreshing it
-                console.log('Invalid refresh token, issuing a new one...');
+                // If the refresh token is expired or invalid, proceed with issuing a new one
+                console.log('Invalid or expired refresh token, issuing a new one...');
             }
         }
 
-        // If no valid refresh token is found, generate new tokens
-        const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-        const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+        // No valid refresh token found, issue new tokens
+        const accessToken = jwt.sign({ id: user.id, email: user.email , name: user.name}, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign({ id: user.id, email: user.email , name: user.name}, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        // Store refresh token securely in cookies
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true, // Secure and not accessible via JavaScript
+            secure: process.env.NODE_ENV === 'production', // Use secure cookie in production
+            sameSite: 'Strict' // Helps mitigate CSRF attacks
+        });
 
-        // Redirect to the dashboard after sign-in
-        return res.redirect('/dashboards/student_dashboard');
+        console.log('User authenticated, access and refresh tokens issued');
+        return res.json({ accessToken, user });
+
     } catch (error) {
         console.error('Error during sign-in:', error);
         res.status(500).json({ message: 'An error occurred during sign-in' });
     }
 });
-
 
 module.exports = router;

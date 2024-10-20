@@ -71,6 +71,7 @@
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 20px;
+            margin-top: -40px;
         }
 
         .container-fluid h1 {
@@ -155,7 +156,7 @@
                     <button class="btn btn-primary" type="submit">Search</button>
                 </form>
 
-
+                <!-- Profile dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -167,7 +168,7 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                        <li><a class="dropdown-item" href="/signout">Logout</a></li>
                     </ul>
                 </li>
             </ul>
@@ -209,11 +210,11 @@
             <div class="container-fluid">
                 <!-- Greeting message -->
                 <div class="greeting">
-                    <h2>Hello, <%= user.firstName %>!</h2>
+                    <h2>Hello, <%= user.name %>!</h2>
                     <p>Welcome back to your dashboard. Here you can manage your incidents and stay updated.</p>
                 </div>
 
-                <h1 class="mt-4">Campus Incident Management Dashboard</h1>
+                
 
                 <div id="incident-reporting"></div>
                 <div id="incident-tracking"></div>
