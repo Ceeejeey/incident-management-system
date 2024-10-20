@@ -2,20 +2,24 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
+    
     const token = req.cookies.refreshToken;
- 
+    
     if (!token) {
-        return res.redirect('/signin'); // No token found, redirect to sign-in
+        // return res.redirect('/signin'); // No token found, redirect to sign-in
+        return res.status(401).json({ message: 'No token found. Please sign in.' });
     }
  
-    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
         if (err) {
             // If refresh token is invalid or expired, clear the cookie and redirect
             res.clearCookie('refreshToken');
-            return res.redirect('/signin');
+            // return res.redirect('/signin');
+            return res.status(401).json({ message: 'Invalid or expired token' });
         }
  
-        req.user = user;
+        req.user = decoded;
+        console.log('User info:', decoded);
         next(); // Proceed to the dashboard or next middleware
     });
 };
