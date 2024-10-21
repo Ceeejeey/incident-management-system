@@ -23,7 +23,7 @@ app.set('views', path.join(__dirname, 'views')); // Set the views directory corr
 app.use(express.static(path.join(__dirname, 'public')));
 // Use routes
 app.use("/", require("./routes/pages"));
-app.use("/api", require("./controllers/authController")); // Fixed spelling for 'authController'
+app.use("/api", require("./controllers/authController")); 
 
 // Set the server to listen on a specific port
 const PORT = process.env.PORT || 3000;

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Incident Management Administrator Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 70px;
+        }
+
+        .navbar {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1030;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #wrapper {
+            display: flex;
+            width: 100%;
+        }
+
+        #sidebar-wrapper {
+            width: 250px;
+            background-color: #343a40;
+            min-height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            z-index: 1000;
+        }
+
+        #page-content-wrapper {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 250px;
+            margin-top: 56px;
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            font-size: 1.5rem;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            background-color: #343a40;
+            color: white;
+            padding: 0.75rem 1.25rem;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #495057;
+        }
+
+        .greeting {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            margin-top: -40px;
+        }
+
+        .container-fluid h1 {
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        .navbar-light .navbar-nav .nav-link {
+            color: #343a40;
+            margin-left: 15px;
+        }
+
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+        .dropdown-menu {
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .search-bar {
+            width: 200px;
+            border-radius: 4px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #343a40;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <h3 class="navbar-brand ms-3">Administrator Dashboard</h3>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Messages <span class="badge bg-primary">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
+                        <li><a class="dropdown-item" href="#">Message 1</a></li>
+                        <li><a class="dropdown-item" href="#">Message 2</a></li>
+                        <li><a class="dropdown-item" href="#">Message 3</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-center" href="#">See All Messages</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Notifications <span class="badge bg-warning">5</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                        <li><a class="dropdown-item" href="#">Notification 1</a></li>
+                        <li><a class="dropdown-item" href="#">Notification 2</a></li>
+                        <li><a class="dropdown-item" href="#">Notification 3</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-center" href="#">See All Notifications</a></li>
+                    </ul>
+                </li>
+
+                <form class="d-flex ms-3">
+                    <input class="form-control search-bar me-2" type="search" placeholder="Search..."
+                        aria-label="Search">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+
+                <!-- Profile dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <img src="path/to/profile-pic.jpg" alt="Profile" class="rounded-circle" width="30" height="30">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/signout">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark" id="sidebar-wrapper">
+            <div class="sidebar-heading">Administrator Dashboard</div>
+            <div class="list-group list-group-flush">
+                <a href="#incident-reporting" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-exclamation-circle me-2"></i> Incident Reporting
+                </a>
+                <a href="#user-management" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-users me-2"></i> User Management
+                </a>
+                <a href="#incident-tracking" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-chart-line me-2"></i> Incident Tracking
+                </a>
+                <a href="#notifications" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-bell me-2"></i> Notifications
+                </a>
+                <a href="#emergency-contacts" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-phone-alt me-2"></i> Emergency Contacts
+                </a>
+                <a href="#reports" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-file-alt me-2"></i> Reports
+                </a>
+                <a href="#system-settings" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-cogs me-2"></i> System Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <!-- Greeting message -->
+                <div class="greeting">
+                    <h2>Hello, <%= admin.name %>!</h2>
+                    <p>Welcome to the administrator dashboard. Manage users and oversee campus operations here.</p>
+                </div>
+
+                <div id="incident-reporting"></div>
+                <div id="user-management"></div>
+                <div id="incident-tracking"></div>
+                <div id="notifications"></div>
+                <div id="emergency-contacts"></div>
+                <div id="reports"></div>
+                <div id="system-settings"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
