@@ -88,6 +88,9 @@
                                 <option value="" disabled selected>Select Role</option>
                                 <option value="student">Student</option>
                                 <option value="staff">Staff</option>
+                                <% if (!adminExists) { %>
+                                    <option value="admin">Admin</option>
+                                <% } %>
                             </select>
                         </div>
                         <div class="mb-3">
