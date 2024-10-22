@@ -129,8 +129,10 @@
                 
                 if (user.user.role === 'staff') {
                 window.location.href = '/dashboards/staff_dashboard';
-                } else {
+                } else if (user.user.role === 'student') {
                 window.location.href = '/dashboards/student_dashboard';
+                } else {
+                window.location.href = '/dashboards/admin_dashboard';
                 }
             } else {
                 const contentType = response.headers.get('content-type');
