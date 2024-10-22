@@ -74,6 +74,29 @@ router.get('/incident/incidentReport', authenticateToken, (req, res) => {
         user: req.user // Pass user info to the dashboard
     });
 });
+//emergency Contacts route
+router.get('/emergencyContacts/emergency_contacts', authenticateToken, (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized: No user information found' });
+    }
+
+    console.log(req.user.email);
+    res.render('emergencyContacts/emergency_contacts', {
+        user: req.user // Pass user info to the dashboard
+    });
+});
+
+//chat page route
+router.get('/communication/chat', authenticateToken ,(req,res) =>{
+
+    if(!req.user){
+        return res.status(401).json({message: 'Unauthorized: No user information found'});
+    }
+    
+    res.render('communication/chat', {
+        user:req.user
+    })
+})
 
 //signout route
 router.get('/signout', (req, res) => {
