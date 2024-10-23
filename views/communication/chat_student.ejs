@@ -28,7 +28,6 @@
             overflow: hidden;
         }
 
-       
         .chat-header {
             background-color: #007bff;
             color: white;
@@ -58,7 +57,6 @@
         .chat-header .staff-info .status {
             font-size: 12px;
             color: #e0ffea;
-            
         }
 
         .messages {
@@ -103,13 +101,11 @@
         }
 
         .input-container {
-            
             display: flex;
             padding: 10px;
             background-color: #f9f9f9;
             border-top: 1px solid #eee;
             align-items: center;
-            
         }
 
         .input-container input {
@@ -150,13 +146,27 @@
             <div class="staff-info">
                 <img src="https://via.placeholder.com/40" alt="Staff Profile">
                 <div>
-                    <div class="name">John Doe</div>
+                    <div class="name">
+                        <%= staff ? staff.name : 'No Staff' %>
+                    </div>
                     <div class="status">Online</div>
                 </div>
             </div>
         </div>
 
-        <div class="messages" id="messages"></div>
+        <div class="messages" id="messages">
+            <% if (messages && messages.length > 0) { %>
+                <% messages.forEach(message => { %>
+                    <div class="message <%= message.is_read ? 'incoming' : 'outgoing' %>">
+                        <strong><%= message.sender_name %>:</strong> <%= message.content %>
+                        <br><small><%= new Date(message.timestamp).toLocaleString() %></small>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="message">No messages to display.</div>
+            <% } %>
+        </div>
+
         <div class="input-container">
             <input id="messageInput" type="text" placeholder="Type a message">
             <button onclick="sendMessage()">Send</button>
@@ -167,28 +177,38 @@
     <script>
         const socket = io();
 
-        const messages = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
+        // Register the student user on the socket
+        const studentInfo = <%- JSON.stringify(user) %>; // Current logged-in student
+        const staffInfo = <%- JSON.stringify(staff) %>; // Staff to chat with
+
+        socket.emit('register', { user_id: studentInfo.user_id, role: 'student' });
 
         // Function to send a message
         function sendMessage() {
-            const message = messageInput.value;
-            socket.emit('chat message', message);
-            messageInput.value = '';
+            const message = messageInput.value.trim(); // Trim whitespace
+            if (message) {
+                // Emit the message to the server
+                socket.emit('chat message', {
+                    message,
+                    sender: studentInfo,  // Sending student details
+                    receiver: staffInfo  // Assuming the staff is already passed to the template
+                });
+                messageInput.value = ''; // Clear the input
+            }
         }
 
         // Listen for new chat messages
         socket.on('chat message', (data) => {
-            const { user, message, timestamp, type } = data; // Assuming type is 'incoming' or 'outgoing'
+            const { user, message, timestamp } = data;
 
             const messageElement = document.createElement('div');
-            messageElement.classList.add('message', type);
-            messageElement.innerHTML = `<strong>${user.name} (${user.role}):</strong> ${message} <br><small>${timestamp}</small>`;
+            messageElement.classList.add('message', 'incoming'); // Incoming for the staff
+            messageElement.innerHTML = `<strong>${user.name}:</strong> ${message} <br><small>${new Date(timestamp).toLocaleString()}</small>`;
 
-            messages.appendChild(messageElement);
-            messages.scrollTop = messages.scrollHeight; // Auto-scroll
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
         });
-
     </script>
 </body>
 
