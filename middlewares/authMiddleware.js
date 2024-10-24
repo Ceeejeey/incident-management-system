@@ -19,7 +19,7 @@ const authenticateToken = (req, res, next) => {
         }
  
         req.user = decoded;
-        console.log('User info:', decoded);
+        console.log('User info:', req.user);
         next(); // Proceed to the dashboard or next middleware
     });
 };

@@ -38,11 +38,15 @@ io.on('connection', (socket) => {
 
     // Register the user on the socket
     socket.on('register', (user) => {
+        console.log('User registered:', user);
         socket.user = user; // Store user info in socket for later reference
+        socket.join(user.user_id); // Join the socket to a room with the user's ID
+        console.log(`User ${user.name} registered and joined their room.`);
     });
 
     // Listen for chat messages
     socket.on('chat message', async (data) => {
+        console.log('Message received:', data);
         const { message, sender, receiver } = data;
 
         // Get the current timestamp
@@ -50,20 +54,25 @@ io.on('connection', (socket) => {
 
         // Save the message to the database
         try {
-            await pool.query('INSERT INTO messages (sender_id, receiver_id, message, timestamp, isread) VALUES (?, ?, ?, ?, ?)', [
-                sender.user_id,
-                receiver.user_id,
-                message,
-                timestamp, // Include the timestamp
-                0 // is_read
-            ]);
+            await pool.query(
+                'INSERT INTO messages (sender_id, receiver_id, message, timestamp, isread) VALUES (?, ?, ?, ?, ?)', 
+                [
+                    sender.id,
+                    receiver.user_id,
+                    message,
+                    timestamp, // Include the timestamp
+                    0 // is_read
+                ]
+            );
 
-            // Emit the message to the receiver
+            // Emit the message to the receiver's room
             io.to(receiver.user_id).emit('chat message', {
                 user: sender,
                 message,
-                timestamp: timestamp, // Send the timestamp to the client
+                timestamp: timestamp.toISOString(), // Send the timestamp to the client in ISO format
             });
+
+            console.log(`Message sent from ${sender.id} to ${receiver.user_id}: ${message}`);
         } catch (error) {
             console.error('Error saving message to database:', error);
         }
@@ -73,6 +82,7 @@ io.on('connection', (socket) => {
         console.log('A user disconnected');
     });
 });
+
 
 
 // Set the server to listen on a specific port

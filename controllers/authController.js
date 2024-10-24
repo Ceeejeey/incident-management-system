@@ -58,8 +58,8 @@ router.post('/signin', async (req, res) => {
         }
 
         // No valid refresh token found, issue new tokens
-        const accessToken = jwt.sign({ id: user.id, email: user.email , name: user.name , role:user.role}, process.env.JWT_SECRET, { expiresIn: '15m' });
-        const refreshToken = jwt.sign({ id: user.id, email: user.email , name: user.name , role:user.role}, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+        const accessToken = jwt.sign({ id: user.user_id, email: user.email , name: user.name , role:user.role}, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign({ id: user.user_id, email: user.email , name: user.name , role:user.role}, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
         // Store refresh token securely in cookies
         res.cookie('refreshToken', refreshToken, {

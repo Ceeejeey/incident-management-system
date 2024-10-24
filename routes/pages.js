@@ -96,16 +96,17 @@ router.get('/emergencyContacts/emergency_contacts', authenticateToken, async (re
     }
 });
 
-
-//chat page route
 // Chat page route
 router.get('/communication/chat_student', authenticateToken, async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized: No user information found' });
     }
-
-    const studentId = req.user.user_id; // Get the current student's user ID
+    console.log("fucking ser: " + req.user);
+    const studentId = req.user.id; // Get the current student's user ID
     const staffId = req.query.user_id; // Get the selected staff ID from the query parameter
+
+    console.log('Student ID:', studentId);
+    console.log('Staff ID:', staffId);
 
     try {
         // Fetch the staff details from the database based on the staffId
@@ -149,59 +150,93 @@ router.get('/communication/chat_student', authenticateToken, async (req, res) =>
 
 
 //chat for staff
-router.get('/communication/chat_staff', authenticateToken, async (req, res) => {
-    if (!req.user) {
-        return res.status(401).json({ message: 'Unauthorized: No user information found' });
-    }
-
-    const staffId = req.user.user_id; 
+// Route to render the chat_staff.ejs page for a specific student
+router.get('/communication/chat_staff/:student_id', authenticateToken, async (req, res) => {
+    const staff_id = req.user.user_id;  // Assuming user authentication middleware sets req.user
+    const student_id = req.params.student_id;
 
     try {
-        
-        const [unreadMessages] = await pool.query(
-            `SELECT m.*, u.name AS student_name 
-             FROM messages m 
-             JOIN users u ON m.sender_id = u.user_id 
-             WHERE m.receiver_id = ? AND m.isread = 0`, // Ensure 'is_read' is correct
-            [staffId]
-        );
+        // Fetch previous messages between the staff and the student
+        const [previousMessages] = await pool.query(`
+            SELECT messages.*, users.name as sender_name
+            FROM messages
+            JOIN users ON messages.sender_id = users.user_id
+            WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+            ORDER BY timestamp ASC
+        `, [staff_id, student_id, student_id, staff_id]);
 
-        
-        const [previousMessages] = await pool.query(
-            `SELECT m.*, u.name AS sender_name 
-             FROM messages m 
-             JOIN users u ON m.sender_id = u.user_id 
-             WHERE (m.receiver_id = ? OR m.sender_id = ?)
-             ORDER BY m.timestamp ASC`, 
-            [staffId, staffId]
-        );
+        // Fetch unread messages for the staff member from this student
+        const [unreadMessages] = await pool.query(`
+            SELECT messages.*, users.name as sender_name
+            FROM messages
+            JOIN users ON messages.sender_id = users.user_id
+            WHERE sender_id = ? AND receiver_id = ? AND isread = 0
+            ORDER BY timestamp ASC
+        `, [student_id, staff_id]);
 
-        // If there are unread messages, get the first message's student details
-        const studentId = unreadMessages.length > 0 ? unreadMessages[0].sender_id : null; // If no unread messages
-        let student = null;
+        // Mark unread messages as read
+        await pool.query(`
+            UPDATE messages
+            SET isread = 1
+            WHERE sender_id = ? AND receiver_id = ? AND isread = 0
+        `, [student_id, staff_id]);
 
-        if (studentId) {
-            const [studentData] = await pool.query('SELECT user_id, name, email FROM users WHERE user_id = ?', [studentId]);
-            if (studentData.length === 0) {
-                return res.status(404).send('Student not found');
-            }
-            student = studentData[0]; // Assign the student data
-        }
+        // Fetch the student information
+        const [student] = await pool.query('SELECT * FROM users WHERE user_id = ?', [student_id]);
 
-        // Render the chat page with staff and student information
+        // Render the chat_staff.ejs page and pass the messages and student info
         res.render('communication/chat_staff', {
-            user: req.user,         // Staff info
-            student: student,       // Student info (if found)
-            unreadMessages,         // Pass unread messages to the template
-            previousMessages        // Pass previous messages to the template
+            previousMessages,
+            unreadMessages,
+            student: student[0], // Pass student details
+            user: req.user  // Pass the logged-in staff details
         });
     } catch (error) {
-        console.error('Error loading chat page:', error);
-        res.status(500).send('Error loading chat page');
+        console.error('Error loading chat:', error);
+        res.status(500).send('Server Error');
     }
 });
 
+// Route to render the staff communication page
+router.get('/communication/staff_communication', authenticateToken, async (req, res) => {
+    const staff_id = req.user.id;  // Assuming user authentication middleware sets req.user
+    
+    try {
+        // Query to get students who have sent unread messages to the staff
+        const [studentsWithUnreadMessages] = await pool.query(`
+            SELECT users.user_id as student_id, users.name, COUNT(messages.message_id) as unread_count
+            FROM messages
+            JOIN users ON messages.sender_id = users.user_id
+            WHERE messages.receiver_id = ? AND messages.isread = 0
+            GROUP BY users.user_id, users.name
+        `, [staff_id]);
 
+        // Render the staff communication page and pass the list of students with unread messages
+        res.render('communication/staff_communication', { studentsWithUnreadMessages, user: req.user });
+
+    } catch (error) {
+        console.error('Error fetching students with unread messages:', error);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Route to fetch unread messages for a staff member
+router.get('/unread/:staffId', authenticateToken, async (req, res) => {
+    const staffId = req.params.staffId;
+    console.log('Fetching unread messages for staff ID:', staffId);
+
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM messages WHERE isread = 0 AND receiver_id = ?',
+            [staffId]
+        );
+        console.log('Unread messages:', rows);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching unread messages:', error);
+        res.status(500).json({ message: 'An error occurred while fetching unread messages' });
+    }
+});
 
 //signout route
 router.get('/signout', (req, res) => {

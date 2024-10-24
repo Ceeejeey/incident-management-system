@@ -147,71 +147,81 @@
             <div class="student-info">
                 <img src="https://via.placeholder.com/40" alt="Student Profile">
                 <div>
-                    <div class="name">
-                        <%= student ? student.name : 'No Student' %>
-                    </div>
+                    <div class="name"><%= student.name %></div>
                     <div class="status">Online</div>
                 </div>
             </div>
         </div>
-    
+
         <div class="messages" id="messages">
-            <% if (unreadMessages.length > 0 || previousMessages.length > 0) { %>
-                <% 
-                    // Combine unread and previous messages for display
-                    const allMessages = [...unreadMessages, ...previousMessages];
-                %>
-                <% allMessages.forEach(message => { %>
-                    <div class="message <%= message.is_read ? 'incoming' : 'outgoing' %>">
-                        <strong><%= message.sender_name %>:</strong> <%= message.message %>
-                        <br><small><%= new Date(message.timestamp).toLocaleString() %></small>
-                    </div>
-                <% }); %>
-            <% } else { %>
-                <div class="message">No messages to display.</div>
-            <% } %>
+            <% previousMessages.forEach(message => { %>
+                <div class="message <%= message.isread ? 'incoming' : 'outgoing' %>">
+                    <strong><%= message.sender_name %>:</strong> <%= message.message %>
+                    <br><small><%= new Date(message.timestamp).toLocaleString() %></small>
+                </div>
+            <% }) %>
         </div>
-        
+
         <div class="input-container">
             <input id="messageInput" type="text" placeholder="Type a message">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
-    
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
-        // Register the staff user on the socket
-        const staffInfo = <%- JSON.stringify(user) %>;  // Current logged-in staff
-        socket.emit('register', { user_id: staffInfo.user_id, role: 'staff' });
+        const staffInfo = <%- JSON.stringify(user) %>; // Current logged-in staff
+        const studentInfo = <%- JSON.stringify(student) %>; // Student to chat with
 
-        // Function to send a message
+        socket.emit('register', { user_id: staffInfo.id, name: staffInfo.name, role: 'staff' });
+
+        // Function to scroll to the bottom of the messages
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Send a message
         function sendMessage() {
-            const message = messageInput.value.trim(); // Trim whitespace
+            const message = document.getElementById('messageInput').value.trim();
             if (message) {
                 // Emit the message to the server
                 socket.emit('chat message', {
                     message,
-                    sender: staffInfo,  
-                    receiver: student  
+                    sender: staffInfo,
+                    receiver: studentInfo
                 });
-                messageInput.value = ''; 
+
+                // Create a message element for the sent message
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'outgoing'); // Add class for outgoing messages
+                messageElement.innerHTML = `<strong>${staffInfo.name}:</strong> ${message} <br><small>${new Date().toLocaleString()}</small>`;
+                
+                // Append the message to the messages container
+                document.getElementById('messages').appendChild(messageElement);
+                
+                // Scroll to the bottom after sending the message
+                scrollToBottom();
+
+                // Clear the input field
+                document.getElementById('messageInput').value = ''; // Clear input
             }
         }
 
         // Listen for new chat messages
         socket.on('chat message', (data) => {
             const { user, message, timestamp } = data;
-
             const messageElement = document.createElement('div');
-            messageElement.classList.add('message', 'incoming'); // Incoming for the staff
+            messageElement.classList.add('message', 'incoming');
             messageElement.innerHTML = `<strong>${user.name}:</strong> ${message} <br><small>${new Date(timestamp).toLocaleString()}</small>`;
-
-            const messagesDiv = document.getElementById('messages');
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
+            document.getElementById('messages').appendChild(messageElement);
+            
+            // Scroll to the bottom after receiving the message
+            scrollToBottom();
         });
     </script>
 </body>
+
+</html>
