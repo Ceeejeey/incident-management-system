@@ -157,9 +157,14 @@
         <div class="messages" id="messages">
             <% if (messages && messages.length > 0) { %>
                 <% messages.forEach(message => { %>
-                    <div class="message <%= message.is_read ? 'incoming' : 'outgoing' %>">
-                        <strong><%= message.sender_name %>:</strong> <%= message.content %>
-                        <br><small><%= new Date(message.timestamp).toLocaleString() %></small>
+                    <div class="message <%= message.isread ? 'incoming' : 'outgoing' %>">
+                        <strong>
+                            <%= message.sender_name %>:
+                        </strong>
+                        <%= message.message %>
+                        <br><small>
+                            <%= new Date(message.timestamp).toLocaleString() %>
+                        </small>
                     </div>
                 <% }); %>
             <% } else { %>
@@ -169,47 +174,65 @@
 
         <div class="input-container">
             <input id="messageInput" type="text" placeholder="Type a message">
-            <button onclick="sendMessage()">Send</button>
+            <button id="sendButton">Send</button> <!-- Added an id for debugging -->
         </div>
-    </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io();
 
-        // Register the student user on the socket
-        const studentInfo = <%- JSON.stringify(user) %>; // Current logged-in student
-        const staffInfo = <%- JSON.stringify(staff) %>; // Staff to chat with
+            // Register the student user on the socket
+            const studentInfo = <%- JSON.stringify(user) %>; // Current logged-in student
+            const staffInfo = <%- JSON.stringify(staff) %>; // Staff to chat with
 
-        socket.emit('register', { user_id: studentInfo.user_id, role: 'student' });
+            console.log({ studentInfo });
+            console.log({ staffInfo });
+            socket.emit('register', { user_id: studentInfo.id, name: studentInfo.name, role: 'student' });
 
-        // Function to send a message
-        function sendMessage() {
-            const message = messageInput.value.trim(); // Trim whitespace
-            if (message) {
-                // Emit the message to the server
-                socket.emit('chat message', {
-                    message,
-                    sender: studentInfo,  // Sending student details
-                    receiver: staffInfo  // Assuming the staff is already passed to the template
-                });
-                messageInput.value = ''; // Clear the input
+            // Function to send a message
+            function sendMessage() {
+                const timestamp = new Date();
+                const message = document.getElementById('messageInput').value.trim(); // Updated for clarity
+                if (message) {
+                    // Emit the message to the server
+                    socket.emit('chat message', {
+                        message,
+                        sender: studentInfo,
+                        receiver: staffInfo // Make sure this has the correct user_id
+                    });
+
+                    // Append the outgoing message to the chatbox
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', 'outgoing'); // Outgoing class
+                    messageElement.innerHTML = `<strong>You:</strong> ${message} <br><small>${timestamp.toLocaleString()}</small>`;
+
+                    document.getElementById('messages').appendChild(messageElement);
+                    document.getElementById('messageInput').value = ''; // Clear the input
+
+                    // Auto-scroll to the bottom
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
             }
-        }
 
-        // Listen for new chat messages
-        socket.on('chat message', (data) => {
-            const { user, message, timestamp } = data;
+            // Add event listener to the send button
+            document.getElementById('sendButton').onclick = sendMessage;
 
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message', 'incoming'); // Incoming for the staff
-            messageElement.innerHTML = `<strong>${user.name}:</strong> ${message} <br><small>${new Date(timestamp).toLocaleString()}</small>`;
+            // Listening for incoming messages
+            socket.on('chat message', (data) => {
+                const { user, message, timestamp } = data;
 
-            const messagesDiv = document.getElementById('messages');
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
-        });
-    </script>
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'incoming');
+                messageElement.innerHTML = `<strong>${user.name}:</strong> ${message} <br><small>${new Date(timestamp).toLocaleString()}</small>`;
+
+                document.getElementById('messages').appendChild(messageElement);
+
+                // Auto-scroll to the bottom
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        </script>
 </body>
 
 </html>
