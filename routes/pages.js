@@ -101,7 +101,7 @@ router.get('/communication/chat_student', authenticateToken, async (req, res) =>
     if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized: No user information found' });
     }
-    console.log("fucking ser: " + req.user);
+    
     const studentId = req.user.id; // Get the current student's user ID
     const staffId = req.query.user_id; // Get the selected staff ID from the query parameter
 
@@ -117,7 +117,7 @@ router.get('/communication/chat_student', authenticateToken, async (req, res) =>
         }
 
         // Fetch messages exchanged between the student and the selected staff member
-        const messages = await pool.query(`
+        const [messages] = await pool.query(`
                             SELECT 
                     m.message AS content, 
                     m.timestamp, 
@@ -135,7 +135,8 @@ router.get('/communication/chat_student', authenticateToken, async (req, res) =>
                     m.timestamp ASC;
 
         `, [studentId, studentId, staffId, staffId, studentId]);
-
+            
+        // console.log('Messages:', messages);
         // Render the chat page with messages, student and staff information
         res.render('communication/chat_student', {
             user: req.user, // Student info
@@ -152,28 +153,37 @@ router.get('/communication/chat_student', authenticateToken, async (req, res) =>
 //chat for staff
 // Route to render the chat_staff.ejs page for a specific student
 router.get('/communication/chat_staff/:student_id', authenticateToken, async (req, res) => {
-    const staff_id = req.user.user_id;  // Assuming user authentication middleware sets req.user
+    const staff_id = req.user.id;  // Assuming user authentication middleware sets req.user
     const student_id = req.params.student_id;
 
+    console.log('staff_id:', req.user);
+console.log('student_id:', student_id);
+
     try {
+
+        // Fetch the student information
+        const [student] = await pool.query('SELECT * FROM users WHERE user_id = ?', [student_id]);
+
         // Fetch previous messages between the staff and the student
-        const [previousMessages] = await pool.query(`
-            SELECT messages.*, users.name as sender_name
-            FROM messages
-            JOIN users ON messages.sender_id = users.user_id
-            WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
-            ORDER BY timestamp ASC
-        `, [staff_id, student_id, student_id, staff_id]);
-
-        // Fetch unread messages for the staff member from this student
-        const [unreadMessages] = await pool.query(`
-            SELECT messages.*, users.name as sender_name
-            FROM messages
-            JOIN users ON messages.sender_id = users.user_id
-            WHERE sender_id = ? AND receiver_id = ? AND isread = 0
-            ORDER BY timestamp ASC
-        `, [student_id, staff_id]);
-
+        const [messages] = await pool.query(`
+            SELECT 
+                m.message AS content, 
+                m.timestamp, 
+                CASE 
+                    WHEN m.sender_id = ? THEN 'outgoing' 
+                    ELSE 'incoming' 
+                END AS message_type,
+                (SELECT name FROM users WHERE user_id = m.sender_id) AS sender_name
+            FROM 
+                messages m 
+            WHERE 
+                (m.sender_id = ? AND m.receiver_id = ?) OR 
+                (m.sender_id = ? AND m.receiver_id = ?)
+            ORDER BY 
+                m.timestamp ASC;
+        `, [staff_id, staff_id, student_id, student_id, staff_id]);
+        
+        console.log('Messages:', messages);
         // Mark unread messages as read
         await pool.query(`
             UPDATE messages
@@ -181,13 +191,10 @@ router.get('/communication/chat_staff/:student_id', authenticateToken, async (re
             WHERE sender_id = ? AND receiver_id = ? AND isread = 0
         `, [student_id, staff_id]);
 
-        // Fetch the student information
-        const [student] = await pool.query('SELECT * FROM users WHERE user_id = ?', [student_id]);
-
+        
         // Render the chat_staff.ejs page and pass the messages and student info
         res.render('communication/chat_staff', {
-            previousMessages,
-            unreadMessages,
+            messages: messages, // Pass messages exchanged between the staff and student
             student: student[0], // Pass student details
             user: req.user  // Pass the logged-in staff details
         });
