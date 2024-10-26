@@ -3,6 +3,8 @@ const router = express.Router();
 const { pool } = require('../config/config');
 const authenticateToken = require('../middlewares/authMiddleware');
 
+
+
 // Basic Route to Test Server
 router.get('/', (req, res) => {
     res.render('index');
@@ -242,6 +244,22 @@ router.get('/unread/:staffId', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching unread messages:', error);
         res.status(500).json({ message: 'An error occurred while fetching unread messages' });
+    }
+});
+
+// Add a route to render the review page
+router.get('/admin/review-incidents', async (req, res) => {
+    try {
+        const [incidentReports] = await pool.query(`
+            SELECT incident_reports.*, users.name AS reporter_name
+            FROM incident_reports 
+            JOIN users ON incident_reports.reporter_id = users.user_id`);
+        
+        console.log('Incident reports:', incidentReports);
+        res.render('incident/adminReviewReport', { incidentReports });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error loading the incident review page');
     }
 });
 
