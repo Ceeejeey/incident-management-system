@@ -28,6 +28,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Use routes
 app.use("/", require("./routes/pages"));
 app.use("/api", require("./controllers/authController"));
+app.use("/api", require("./controllers/incidentController"));
+
 
 // Socket.io setup
 const userSockets = {};
