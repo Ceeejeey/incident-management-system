@@ -250,17 +250,38 @@ router.get('/unread/:staffId', authenticateToken, async (req, res) => {
 // Add a route to render the review page
 router.get('/admin/review-incidents', async (req, res) => {
     try {
+
+        const [staffMembers] = await pool.query('SELECT user_id, name FROM users WHERE role = "staff"');
         const [incidentReports] = await pool.query(`
             SELECT incident_reports.*, users.name AS reporter_name
             FROM incident_reports 
             JOIN users ON incident_reports.reporter_id = users.user_id`);
         
+            console.log('Staff Members:', staffMembers);
         console.log('Incident reports:', incidentReports);
-        res.render('incident/adminReviewReport', { incidentReports });
+        res.render('incident/adminReviewReport', { incidentReports ,staffMembers });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error loading the incident review page');
     }
+});
+
+// Route to assign an incident report
+router.post('/assign-incident', async (req, res) => {
+    const { reportId, staffId, severity, adminDescription } = req.body;
+    const dateNow = new Date();
+
+    // Insert into the incident table
+    await pool.query(`
+        INSERT INTO incidents (reported_by, description, evidence, location, status, assigned_to, date_reported, last_updated, severity)
+        SELECT reporter_id, ?, evidence, location, 'in-progress', ?, ?, ?, ?
+        FROM incident_reports WHERE id = ?
+    `, [adminDescription, staffId, dateNow, dateNow, severity, reportId]);
+
+    // Update the original incident report status
+    await pool.query('UPDATE incident_reports SET status = "in-progress" WHERE id = ?', [reportId]);
+
+    res.redirect('/admin/review-incidents');
 });
 
 //signout route
