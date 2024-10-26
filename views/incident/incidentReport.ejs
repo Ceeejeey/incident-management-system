@@ -78,7 +78,7 @@
                 <h2>Incident Report</h2>
                 <p>Please provide details about the incident.</p>
             </div>
-            <form action="/api/report-incident" method="POST">
+            <form action="/api/report-incident" method="POST" enctype="multipart/form-data">
                 <input type="text" class="form-control" id="title" name="title" placeholder="Incident Title" required>
                 <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe the incident" required></textarea>
                 <input type="date" class="form-control" id="date" name="date" required>
