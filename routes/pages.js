@@ -5,6 +5,8 @@ const authenticateToken = require('../middlewares/authMiddleware');
 
 
 
+
+
 // Basic Route to Test Server
 router.get('/', (req, res) => {
     res.render('index');
@@ -248,7 +250,7 @@ router.get('/unread/:staffId', authenticateToken, async (req, res) => {
 });
 
 // Add a route to render the review page
-router.get('/admin/review-incidents', async (req, res) => {
+router.get('/admin/review-incidents', authenticateToken ,async (req, res) => {
     try {
 
         const [staffMembers] = await pool.query('SELECT user_id, name FROM users WHERE role = "staff"');
@@ -267,21 +269,163 @@ router.get('/admin/review-incidents', async (req, res) => {
 });
 
 // Route to assign an incident report
-router.post('/assign-incident', async (req, res) => {
+router.post('/assign-incident', authenticateToken, async (req, res) => {
     const { reportId, staffId, severity, adminDescription } = req.body;
     const dateNow = new Date();
 
-    // Insert into the incident table
-    await pool.query(`
-        INSERT INTO incidents (reported_by, description, evidence, location, status, assigned_to, date_reported, last_updated, severity)
-        SELECT reporter_id, ?, evidence, location, 'in-progress', ?, ?, ?, ?
-        FROM incident_reports WHERE id = ?
-    `, [adminDescription, staffId, dateNow, dateNow, severity, reportId]);
+    try {
+        await pool.query(`
+            INSERT INTO incidents (reported_by, title,user_description,category, description, evidence, location, status, assigned_to, date_reported, last_updated, severity)
+            SELECT reporter_id, title ,description , category , ?, evidence, location, 'in-progress', ?, ?, ?, ?
+            FROM incident_reports WHERE id = ?
+        `, [adminDescription, staffId, dateNow, dateNow, severity, reportId]);
 
-    // Update the original incident report status
-    await pool.query('UPDATE incident_reports SET status = "in-progress" WHERE id = ?', [reportId]);
+        await pool.query('UPDATE incident_reports SET status = "in-progress" WHERE id = ?', [reportId]);
 
-    res.redirect('/admin/review-incidents');
+        // Create a notification for the assigned staff
+        const notificationMessage = `You have been assigned a new incident report (#${reportId}).`;
+        const notificationLink = `/staff/incident-report/${reportId}`;
+
+        await pool.query(`
+            INSERT INTO notifications (staff_id, message, link) VALUES (?, ?, ?)
+        `, [staffId, notificationMessage, notificationLink]);
+
+        res.redirect('/admin/review-incidents');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error assigning the incident');
+    }
+});
+
+//notification route for staff
+router.get('/staff/notifications/unread', authenticateToken ,async (req, res) => {
+    const staffId = req.user.id;
+
+    const [notifications] = await pool.query(`
+        SELECT * FROM notifications WHERE staff_id = ? AND is_read = FALSE ORDER BY timestamp DESC
+    `, [staffId]);
+
+    res.json(notifications);
+});
+
+// Route to mark a notification as read
+router.post('/staff/notifications/mark-as-read/:id', authenticateToken ,async (req, res) => {
+    const notificationId = req.params.id;
+    await pool.query('UPDATE notifications SET is_read = TRUE WHERE notification_id = ?', [notificationId]);
+    res.status(200).send();
+});
+
+
+// Route to update incident status
+router.post('/staff/update-incident', authenticateToken, async (req, res) => {
+    const { incidentId, updateDescription } = req.body;
+    const timestamp = new Date();
+
+    // Validate input
+    if (!incidentId || !updateDescription) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        // Insert update log into incident_logs table
+        await pool.query(`
+            INSERT INTO incident_logs (incident_id, updated_by, new_status, update_description, timestamp)
+            VALUES (?, ?, ?, ?, ?)
+        `, [incidentId, req.user.id, 'in-progress', updateDescription, timestamp]);
+
+        // Send JSON response for successful update
+        res.json({ success: true, message: 'Incident updated successfully' });
+    } catch (error) {
+        console.error("Error updating incident:", error);
+        res.status(500).json({ success: false, message: 'Error updating the incident' });
+    }
+});
+
+// Route to mark an incident as resolved
+router.post('/staff/resolve-incident', authenticateToken, async (req, res) => {
+    const { incidentId, resolveDescription } = req.body;
+    const timestamp = new Date();
+
+    console.log('Incident ID:', incidentId);
+    console.log('Resolve Description:', resolveDescription);
+
+    // Validate input
+    if (!incidentId || !resolveDescription) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        // Fetch the current status from incident_logs
+        const [rows] = await pool.query(`SELECT new_status FROM incident_logs WHERE incident_id = ? ORDER BY timestamp DESC LIMIT 1`, [incidentId]);
+        const new_status = rows.length > 0 ? rows[0].new_status : null;
+
+        // Update or insert log based on current status
+        if (new_status === 'in-progress') {
+            // Update the existing log entry
+            await pool.query(`
+                UPDATE incident_logs SET new_status = "resolved", update_description = ?, timestamp = ? 
+                WHERE incident_id = ?
+            `, [resolveDescription, timestamp, incidentId]);
+        } else {
+            // Insert a new log entry
+            await pool.query(`
+                INSERT INTO incident_logs (incident_id, updated_by, new_status, update_description, timestamp)
+                VALUES (?, ?, ?, ?, ?)
+            `, [incidentId, req.user.id, 'resolved', resolveDescription, timestamp]);
+        }
+
+        // Update the incidents and incident_reports tables
+        await pool.query('UPDATE incidents SET status = "resolved", last_updated = NOW() WHERE incident_id = ?', [incidentId]);
+        // await pool.query('UPDATE incident_reports SET status = "resolved" WHERE incident_id = ?', [incidentId]);
+
+        // Send JSON response for successful resolution
+        res.json({ success: true, message: 'Incident marked as resolved' });
+    } catch (error) {
+        console.error('Error marking incident as resolved:', error);
+        res.status(500).json({ success: false, message: 'Error marking incident as resolved' });
+    }
+});
+
+
+
+// Route to get incident reports assigned to the logged-in staff member
+router.get('/staff/assigned-incidents', authenticateToken ,async (req, res) => {
+    const staffId = req.user.id; // Assumes `req.user.id` is the logged-in staff member's ID
+
+    try {
+        // Fetch incident reports assigned to this staff member
+        const [incidentReports] = await pool.query(`
+            SELECT 
+                i.incident_id, 
+                i.reported_by, 
+                i.title,
+                i.user_description,
+                i.category,
+                i.description, 
+                i.evidence, 
+                i.location, 
+                i.status, 
+                i.date_reported, 
+                i.last_updated, 
+                i.severity, 
+                u.name AS reporter_name
+            FROM 
+                incidents i
+            JOIN 
+                users u ON i.reported_by = u.user_id
+            WHERE 
+                i.assigned_to = ? AND 
+                i.status = 'in-progress'  -- Add this condition
+            ORDER BY 
+                i.last_updated DESC
+        `, [staffId]);
+        
+        console.log('Incident reports:', incidentReports);
+        res.render('incident/staffIncidentReport', { incidentReports });
+    } catch (error) {
+        console.error("Error fetching assigned incidents:", error);
+        res.status(500).send('Error loading the assigned incidents page');
+    }
 });
 
 //signout route
