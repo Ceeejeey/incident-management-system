@@ -60,26 +60,28 @@
       padding: 12px;
       text-align: center;
       border-top: none;
-    }
-
-    /* Fade-out effect */
-    .fade-out {
-      transition: opacity 0.5s ease, height 0.5s ease;
-      opacity: 0;
-      height: 0;
-      overflow: hidden;
+      vertical-align: middle;
     }
 
     /* Button styling */
+    .btn {
+      margin-right: 5px;
+    }
+
     .btn-primary {
       background-color: #4a90e2;
       border-color: #4a90e2;
-
     }
 
     .btn-primary:hover {
       background-color: #357ab8;
       border-color: #357ab8;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
     }
 
     /* Modal styling */
@@ -129,24 +131,29 @@
         </tr>
       </thead>
       <tbody>
-        <% incidentReports.forEach(report => { %>
-        <tr data-incident-id="<%= report.incident_id %>">
-          <td><%= report.title %></td>
-          <td><%= report.description %></td>
-          <td><%= report.date_reported %></td>
-          <td><%= report.location %></td>
-          <td><%= report.category %></td>
-          <td><%= report.reporter_name %></td>
-          <td>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal" data-id="<%= report.incident_id %>">Update Status</button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resolveModal" data-id="<%= report.incident_id %>">Resolve Incident</button>
-          </td>
-        </tr>
-        <% }) %>
+        <% if (incidentReports.length > 0) { %>
+          <% incidentReports.forEach(report => { %>
+            <tr data-incident-id="<%= report.incident_id %>">
+              <td><%= report.title %></td>
+              <td><%= report.description %></td>
+              <td><%= new Date(report.date_reported).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
+              <td><%= report.location %></td>
+              <td><%= report.category %></td>
+              <td><%= report.reporter_name %></td>
+              <td class="btn-group">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal" data-id="<%= report.incident_id %>">Update Status</button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resolveModal" data-id="<%= report.incident_id %>">Resolve Incident</button>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="7" class="text-center">No new assigned reports to review.</td>
+          </tr>
+        <% } %>
       </tbody>
     </table>
   </div>
-
 
   <!-- Update Modal -->
   <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
@@ -194,7 +201,6 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -202,39 +208,24 @@
         updateModal.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
             const incidentId = button.getAttribute('data-id');
-            console.log('Update Modal - Incident ID:', incidentId);  // Debug log
-            document.getElementById('updateIncidentId').value = incidentId; // Assign to hidden input
+            document.getElementById('updateIncidentId').value = incidentId;
         });
-    
+
         const resolveModal = document.getElementById('resolveModal');
         resolveModal.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
             const incidentId = button.getAttribute('data-id');
-            console.log('Resolve Modal - Incident ID:', incidentId);  // Debug log
-            document.getElementById('resolveIncidentId').value = incidentId; // Assign to hidden input
+            document.getElementById('resolveIncidentId').value = incidentId;
         });
-    
-        // Handle form submission for resolving incident
+
         document.getElementById('submitResolve').addEventListener('click', function () {
             const incidentId = document.getElementById('resolveIncidentId').value;
             const resolveDescription = document.getElementById('resolveDescription').value;
-            console.log('Submitting Resolve for Incident ID:', incidentId);  // Debug log
-    
-            // Create FormData object and append data
-            const formData = new FormData();
-            formData.append('incidentId', incidentId);
-            formData.append('resolveDescription', resolveDescription);
-    
-            // Send AJAX request to resolve the incident
+
             fetch('/staff/resolve-incident', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    incidentId: incidentId,
-                    resolveDescription: resolveDescription
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ incidentId, resolveDescription })
             })
             .then(response => {
                 if (response.ok) {
@@ -250,35 +241,21 @@
             })
             .catch(console.error);
         });
-    
-        
-        // Handle form submission for updating incident status
+
         document.getElementById('submitUpdate').addEventListener('click', function () {
             const incidentId = document.getElementById('updateIncidentId').value;
             const updateDescription = document.getElementById('updateDescription').value;
-            console.log('Submitting Update for Incident ID:', incidentId);  // Debug log
-    
-            // Create FormData object and append data
-            const formData = new FormData();
-            formData.append('incidentId', incidentId);
-            formData.append('updateDescription', updateDescription);
-    
-            // Send AJAX request to update the incident
+
             fetch('/staff/update-incident', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    incidentId: incidentId,
-                    updateDescription: updateDescription // Corrected this line
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ incidentId, updateDescription })
             })
             .then(response => {
                 if (response.ok) {
                     bootstrap.Modal.getInstance(updateModal).hide();
                 } else {
-                    alert('Error updating incident status.');
+                    alert('Error updating incident.');
                 }
             })
             .catch(console.error);
@@ -286,7 +263,5 @@
     });
   </script>
 </body>
-
-
 
 </html>

@@ -252,20 +252,22 @@ router.get('/unread/:staffId', authenticateToken, async (req, res) => {
 // Add a route to render the review page
 router.get('/admin/review-incidents', authenticateToken ,async (req, res) => {
     try {
-
         const [staffMembers] = await pool.query('SELECT user_id, name FROM users WHERE role = "staff"');
         const [incidentReports] = await pool.query(`
             SELECT incident_reports.*, users.name AS reporter_name
             FROM incident_reports 
-            JOIN users ON incident_reports.reporter_id = users.user_id`);
+            JOIN users ON incident_reports.reporter_id = users.user_id
+            WHERE incident_reports.status = 'pending'
+        `);
         
-            console.log('Staff Members:', staffMembers);
-        console.log('Incident reports:', incidentReports);
-        res.render('incident/adminReviewReport', { incidentReports ,staffMembers });
+        console.log('Staff Members:', staffMembers);
+        console.log('Incident Reports (In Progress):', incidentReports);
+        res.render('incident/adminReviewReport', { incidentReports, staffMembers });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error loading the incident review page');
     }
+    
 });
 
 // Route to assign an incident report
