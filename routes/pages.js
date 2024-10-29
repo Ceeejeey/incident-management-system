@@ -430,6 +430,22 @@ router.get('/staff/assigned-incidents', authenticateToken ,async (req, res) => {
     }
 });
 
+// Assuming Express and MySQL are set up
+router.get('/student/incidents', authenticateToken , async (req, res) => {
+    const studentId = req.user.id; // Assuming student ID is available on req.user
+    try {
+      const [incidents] = await pool.query(
+        'SELECT * FROM incidents WHERE reported_by = ? ORDER BY date_reported DESC',
+        [studentId]
+      );
+      res.render('incident/studentIncidentTracking', { incidents });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error retrieving incident reports');
+    }
+  });
+  
+
 //signout route
 router.get('/signout', (req, res) => {
     res.clearCookie('refreshToken');
