@@ -137,26 +137,33 @@
                 </tr>
             </thead>
             <tbody>
-                <% incidentReports.forEach(report => { %>
+                <% if (incidentReports.length > 0) { %>
+                    <% incidentReports.forEach(report => { %>
+                        <tr>
+                            <td><%= report.title %></td>
+                            <td><%= report.description %></td>
+                            <td><%= report.date %></td>
+                            <td><%= report.location %></td>
+                            <td><%= report.category %></td>
+                            <td><%= report.reporter_name %></td>
+                            <td>
+                                <% const evidenceFiles = JSON.parse(report.evidence); %>
+                                <% evidenceFiles.forEach(file => { %>
+                                    <a href="/<%= file %>" target="_blank" class="evidence-link">View Evidence</a><br>
+                                <% }) %>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal" onclick="setReportId(<%= report.id %>)">Take Action</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
                     <tr>
-                        <td><%= report.title %></td>
-                        <td><%= report.description %></td>
-                        <td><%= report.date %></td>
-                        <td><%= report.location %></td>
-                        <td><%= report.category %></td>
-                        <td><%= report.reporter_name %></td>
-                        <td>
-                            <% const evidenceFiles = JSON.parse(report.evidence); %>
-                            <% evidenceFiles.forEach(file => { %>
-                                <a href="/<%= file %>" target="_blank" class="evidence-link">View Evidence</a><br>
-                            <% }) %>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal" onclick="setReportId(<%= report.id %>)">Take Action</button>
-                        </td>
+                        <td colspan="8" class="text-center">No new incident reports to review.</td>
                     </tr>
-                <% }) %>
+                <% } %>
             </tbody>
+            
         </table>
     </div>
 
