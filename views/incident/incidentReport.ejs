@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Incident Report Form - Campus Incident Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #eef2f7;
-            padding-top: 60px;
-            padding-bottom: 60px;
+            background-color: #f5f7fa;
             margin: 0;
-        }
-        .container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,43 +20,73 @@
         .card {
             border: none;
             border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            background: #fff;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            padding: 50px;
+            background: #ffffff;
             width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 700px;
+        }
+        .back-button-container {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .back-button {
+            font-size: 16px;
+            color: #6c757d;
+        }
+        .back-button i {
+            margin-right: 5px;
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .form-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .form-header p {
+            color: #777;
+            font-size: 1.1rem;
         }
         .form-control {
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px; 
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+        }
+        .form-control-icon {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .form-control-icon input,
+        .form-control-icon textarea,
+        .form-control-icon select {
+            padding-left: 45px;
+        }
+        .form-control-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            font-size: 1.1rem;
         }
         .btn-primary {
-            border-radius: 15px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 14px;
             font-size: 16px;
             font-weight: bold;
         }
         .btn-primary:hover {
             background-color: #0056b3;
         }
-        .form-header {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        .form-header h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
-        }
-        .form-header p {
-            color: #888;
-            font-size: 1rem;
-        }
         .small-text {
             text-align: center;
             margin-top: 30px;
+            font-size: 0.9rem;
+            color: #6c757d;
         }
         .small-text a {
             color: #007bff;
@@ -68,22 +95,55 @@
         .small-text a:hover {
             text-decoration: underline;
         }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="card">
-            <div class="form-header">
-                <h2>Incident Report</h2>
-                <p>Please provide details about the incident.</p>
-            </div>
-            <form action="/api/report-incident" method="POST" enctype="multipart/form-data">
+    <div class="card">
+        <div class="back-button-container">
+            <% if (role === 'student') { %>
+                <a href="/dashboards/student_dashboard" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Student Dashboard
+                </a>
+            <% } else if (role === 'staff') { %>
+                <a href="/dashboards/staff_dashboard" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Staff Dashboard
+                </a>
+            <% } %>
+        </div>
+        <div class="form-header">
+            <h2>Report an Incident</h2>
+            <p>Provide details to help us address the issue.</p>
+        </div>
+        <form action="/api/report-incident" method="POST" enctype="multipart/form-data" id="incidentForm">
+            <div class="form-control-icon">
+                <i class="fas fa-heading"></i>
                 <input type="text" class="form-control" id="title" name="title" placeholder="Incident Title" required>
-                <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe the incident" required></textarea>
+            </div>
+            <div class="form-control-icon">
+                <i class="fas fa-align-left"></i>
+                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the incident" required></textarea>
+            </div>
+            <div class="form-control-icon">
+                <i class="fas fa-calendar-alt"></i>
                 <input type="date" class="form-control" id="date" name="date" required>
+            </div>
+            <div class="form-control-icon">
+                <i class="fas fa-map-marker-alt"></i>
                 <input type="text" class="form-control" id="location" name="location" placeholder="Location of Incident" required>
+            </div>
+            <div class="form-control-icon">
+                <i class="fas fa-paperclip"></i>
                 <input type="file" class="form-control" id="evidence" name="evidence[]" multiple>
+            </div>
+            <div class="form-control-icon">
+                <i class="fas fa-list-alt"></i>
                 <select class="form-control" id="category" name="category" required>
                     <option value="" disabled selected>Select Incident Category</option>
                     <option value="safety">Safety</option>
@@ -91,16 +151,52 @@
                     <option value="property_damage">Property Damage</option>
                     <option value="other">Other</option>
                 </select>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Submit Report</button>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Submit Report</button>
+            </div>
+        </form>
+        <div class="small-text mt-3">
+            <p>Need assistance? <a href="/emergencyContacts/emergency_contacts">Contact Support</a></p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container">
+        <div id="submitToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Incident report submitted successfully!
                 </div>
-            </form>
-            <div class="small-text mt-3">
-                <p>Need assistance? <a href="/emergencyContacts/emergency_contacts">Contact Support</a></p>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('incidentForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch('/api/report-incident', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    var toast = new bootstrap.Toast(document.getElementById('submitToast'));
+                    toast.show();
+                    event.target.reset(); // Reset form fields
+                } else {
+                    console.error('Error submitting the form');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        });
+    </script>
 </body>
 </html>

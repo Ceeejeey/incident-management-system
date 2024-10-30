@@ -69,13 +69,15 @@ router.get('/dashboards/student_dashboard', authenticateToken, (req, res) => {
 
 //incident Report route
 router.get('/incident/incidentReport', authenticateToken, (req, res) => {
+    
     if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized: No user information found' });
     }
 
     console.log(req.user.email);
     res.render('incident/incidentReport', {
-        user: req.user // Pass user info to the dashboard
+        user: req.user ,// Pass user info to the dashboard
+        role: req.user.role
     });
 });
 //emergency Contacts route
@@ -292,7 +294,8 @@ router.post('/assign-incident', authenticateToken, async (req, res) => {
             INSERT INTO notifications (staff_id, message, link) VALUES (?, ?, ?)
         `, [staffId, notificationMessage, notificationLink]);
 
-        res.redirect('/admin/review-incidents');
+        
+        res.redirect('/admin/review-incidents?assigned=true');
     } catch (error) {
         console.error(error);
         res.status(500).send('Error assigning the incident');
@@ -438,6 +441,7 @@ router.get('/student/incidents', authenticateToken , async (req, res) => {
         'SELECT * FROM incidents WHERE reported_by = ? ORDER BY date_reported DESC',
         [studentId]
       );
+      console.log('Incidents:', incidents);
       res.render('incident/studentIncidentTracking', { incidents });
     } catch (error) {
       console.error(error);

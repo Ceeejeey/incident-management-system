@@ -10,7 +10,7 @@
     /* General page styles */
     body {
       background-color: #f4f6f9;
-      font-family: 'Arial', sans-serif;
+      font-family:'poppins' 'Arial', sans-serif;
       color: #333;
       padding: 20px;
     }
@@ -155,6 +155,18 @@
     </table>
   </div>
 
+  <!-- Toast Notifications -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+    <div id="toastNotification" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Action completed successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Update Modal -->
   <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -229,12 +241,15 @@
             })
             .then(response => {
                 if (response.ok) {
+                  var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
+                  toast.show();
                     const row = document.querySelector(`tr[data-incident-id="${incidentId}"]`);
                     if (row) {
                         row.classList.add('fade-out');
                         setTimeout(() => row.remove(), 500);
                     }
                     bootstrap.Modal.getInstance(resolveModal).hide();
+                    
                 } else {
                     alert('Error marking incident as resolved.');
                 }
@@ -253,7 +268,10 @@
             })
             .then(response => {
                 if (response.ok) {
+                  var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
+                  toast.show();
                     bootstrap.Modal.getInstance(updateModal).hide();
+                    
                 } else {
                     alert('Error updating incident.');
                 }
@@ -261,6 +279,8 @@
             .catch(console.error);
         });
     });
+
+   
   </script>
 </body>
 

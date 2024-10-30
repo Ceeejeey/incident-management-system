@@ -8,7 +8,7 @@
   <style>
     body {
       background-color: #f8f9fc;
-      font-family: 'Arial', sans-serif;
+      font-family: 'poppins' 'Arial', sans-serif;
       color: #333;
       padding: 20px;
     }
@@ -96,7 +96,7 @@
           <% incidents.forEach(incident => { %>
             <tr>
               <td><%= incident.title %></td>
-              <td><%= incident.description %></td>
+              <td><%= incident.user_description %></td>
               <td><%= new Date(incident.date_reported).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
               <td><%= incident.location %></td>
               <td><%= incident.severity %></td>
