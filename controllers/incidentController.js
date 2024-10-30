@@ -18,7 +18,8 @@ const upload = multer({ storage });
 
 // Route for incident report submission
 router.post('/report-incident', upload.array('evidence[]'), authenticateToken, async (req, res) => {
-    const reporterId = req.user.id; // or however you are accessing the user's ID
+    const reporterId = req.user.id; // or however you are accessing the user's 
+    
     console.log('Reporter ID:', reporterId);
     console.log('data:', req.body);
     console.log('files:', req.files);

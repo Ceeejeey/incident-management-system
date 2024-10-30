@@ -9,7 +9,7 @@
         /* General page styles */
         body {
             background-color: #f4f6f9;
-            font-family: 'Arial', sans-serif;
+            font-family: 'poppins', 'Arial', sans-serif;
             color: #333;
             padding: 20px;
         }
@@ -121,6 +121,18 @@
     </style>
 </head>
 <body>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer">
+        <div id="assignmentToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Incident successfully assigned to staff.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <h2>Incident Reports Review</h2>
         <table class="table table-bordered">
@@ -213,6 +225,17 @@
         function setReportId(reportId) {
             document.getElementById('reportId').value = reportId;
         }
+
+
+        // Check if "assigned" parameter is in URL to show toast notification
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('assigned')) {
+                const toastElement = document.getElementById('assignmentToast');
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
