@@ -8,6 +8,14 @@
     <style>
         /* Existing Styles */
         body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #eef2f7; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .student-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         .chat-container { background: #fff; border-radius: 10px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); width: 500px; height: 500px; display: flex; flex-direction: column; overflow: hidden; }
         .chat-header { background-color: #007bff; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
         .messages { flex: 1; padding: 15px; overflow-y: auto; border-bottom: 1px solid #eee; display: flex; flex-direction: column; }
@@ -26,6 +34,17 @@
 </head>
 
 <body>
+    <div class="student-container">
+
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/dashboards/student_dashboard">Student Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/emergencyContacts/emergency_contacts">Communication</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Messages</li>
+                </ol>
+            </nav>
+        </div>
     <div class="chat-container">
         <div class="chat-header">
             <div class="staff-info">
@@ -53,7 +72,7 @@
             <input id="messageInput" type="text" placeholder="Type a message">
             <button id="sendButton">Send</button>
         </div>
-
+    </div>
         <script src="/socket.io/socket.io.js"></script>
         <script>
             const socket = io();

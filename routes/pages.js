@@ -449,6 +449,17 @@ router.get('/student/incidents', authenticateToken , async (req, res) => {
     }
   });
   
+  // Route to render the user management page
+router.get('/user-management', async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT user_id, name, email, role FROM users');
+        res.render('userManagement/adminUserManagement', { users });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).send("Error loading user management page");
+    }
+});
+
 
 //signout route
 router.get('/signout', (req, res) => {
