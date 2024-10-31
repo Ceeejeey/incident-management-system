@@ -7,6 +7,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const flash = require('express-flash');
+const session = require('express-session');
 
 // Initialize express app
 const app = express();
@@ -17,6 +19,12 @@ const io = new Server(server);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(session({
+    secret: 'yourSecretKey',
+    resave: false,
+    saveUninitialized: true
+}));
+app.use(flash());
 
 // Initialize view engine
 app.set('view engine', 'ejs');

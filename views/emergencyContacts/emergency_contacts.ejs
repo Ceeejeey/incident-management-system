@@ -21,7 +21,7 @@
         h2 {
             font-weight: bold;
             margin-bottom: 30px;
-            text-align: center;
+            
         }
 
         .contact-card {
@@ -84,11 +84,28 @@
                 margin-bottom: 15px;
             }
         }
+        .back-button-container {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .back-button {
+            font-size: 16px;
+            color: #6c757d;
+        }
+        .back-button i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+        <div class="back-button-container">
+
+            <a href="/dashboards/student_dashboard" class="back-button">
+              <i class="fas fa-arrow-left"></i> Back to Student Dashboard
+            </a>
+          </div>
         <h2>Emergency Contacts</h2>
         <div class="row">
             <% staffContacts.forEach(function(staff) { %>
