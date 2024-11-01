@@ -460,6 +460,36 @@ router.get('/user-management', async (req, res) => {
     }
 });
 
+router.get('/admin/trackIncidents', authenticateToken, async (req, res) => {
+    try {
+        const [incidents] = await pool.query(`SELECT 
+    incidents.incident_id,
+    incidents.title,
+    incidents.location,
+    incidents.user_description,
+    incidents.category,
+    incidents.description,
+    incidents.evidence,
+    incidents.status,
+    incidents.severity,
+    DATE_FORMAT(incidents.date_reported, '%Y-%m-%d') AS date_reported,
+    DATE_FORMAT(incidents.last_updated, '%Y-%m-%d') AS last_updated,
+    COALESCE(staff.name, 'Not Yet') AS assigned_staff_name,
+    student.name AS reported_by
+FROM 
+    incidents
+LEFT JOIN 
+    users AS staff ON incidents.assigned_to = staff.user_id AND staff.role = 'staff'
+JOIN 
+    users AS student ON incidents.reported_by = student.user_id AND student.role = 'student';
+`);
+        res.render('incident/adminTrackIncidents', { incidents });
+    } catch (error) {
+        console.error("Error fetching incidents:", error);
+        res.status(500).send("Error loading incident tracking page");
+    }
+});
+
 
 //signout route
 router.get('/signout', (req, res) => {
