@@ -275,6 +275,7 @@ router.get('/admin/review-incidents', authenticateToken ,async (req, res) => {
 // Route to assign an incident report
 router.post('/assign-incident', authenticateToken, async (req, res) => {
     const { reportId, staffId, severity, adminDescription } = req.body;
+    console.log('Report ID:', reportId);
     const dateNow = new Date();
 
     try {
@@ -283,7 +284,7 @@ router.post('/assign-incident', authenticateToken, async (req, res) => {
             SELECT reporter_id, title ,description , category , ?, evidence, location, 'in-progress', ?, ?, ?, ?
             FROM incident_reports WHERE id = ?
         `, [adminDescription, staffId, dateNow, dateNow, severity, reportId]);
-
+            
         await pool.query('UPDATE incident_reports SET status = "in-progress" WHERE id = ?', [reportId]);
 
         // Create a notification for the assigned staff
@@ -361,27 +362,41 @@ router.post('/staff/resolve-incident', authenticateToken, async (req, res) => {
 
     try {
         // Fetch the current status from incident_logs
-        const [rows] = await pool.query(`SELECT new_status FROM incident_logs WHERE incident_id = ? ORDER BY timestamp DESC LIMIT 1`, [incidentId]);
+        const [rows] = await pool.query(
+            `SELECT new_status FROM incident_logs WHERE incident_id = ? ORDER BY timestamp DESC LIMIT 1`,
+            [incidentId]
+        );
         const new_status = rows.length > 0 ? rows[0].new_status : null;
 
         // Update or insert log based on current status
         if (new_status === 'in-progress') {
             // Update the existing log entry
-            await pool.query(`
-                UPDATE incident_logs SET new_status = "resolved", update_description = ?, timestamp = ? 
-                WHERE incident_id = ?
-            `, [resolveDescription, timestamp, incidentId]);
+            await pool.query(
+                `UPDATE incident_logs SET new_status = "resolved", update_description = ?, timestamp = ? 
+                WHERE incident_id = ?`,
+                [resolveDescription, timestamp, incidentId]
+            );
         } else {
             // Insert a new log entry
-            await pool.query(`
-                INSERT INTO incident_logs (incident_id, updated_by, new_status, update_description, timestamp)
-                VALUES (?, ?, ?, ?, ?)
-            `, [incidentId, req.user.id, 'resolved', resolveDescription, timestamp]);
+            await pool.query(
+                `INSERT INTO incident_logs (incident_id, updated_by, new_status, update_description, timestamp)
+                VALUES (?, ?, ?, ?, ?)`,
+                [incidentId, req.user.id, 'resolved', resolveDescription, timestamp]
+            );
         }
 
-        // Update the incidents and incident_reports tables
-        await pool.query('UPDATE incidents SET status = "resolved", last_updated = NOW() WHERE incident_id = ?', [incidentId]);
-        // await pool.query('UPDATE incident_reports SET status = "resolved" WHERE incident_id = ?', [incidentId]);
+        // Update the incidents table's status
+        await pool.query(
+            'UPDATE incidents SET status = "resolved", last_updated = NOW() WHERE incident_id = ?', 
+            [incidentId]
+        );
+
+        // Update incident_reports using the reporter_id from the incidents table
+        await pool.query(
+            `UPDATE incident_reports SET status = "resolved" 
+             WHERE reporter_id = (SELECT reported_by FROM incidents WHERE incident_id = ?)`,
+            [incidentId]
+        );
 
         // Send JSON response for successful resolution
         res.json({ success: true, message: 'Incident marked as resolved' });
@@ -434,20 +449,27 @@ router.get('/staff/assigned-incidents', authenticateToken ,async (req, res) => {
 });
 
 // Assuming Express and MySQL are set up
-router.get('/student/incidents', authenticateToken , async (req, res) => {
+router.get('/student/incidents', authenticateToken, async (req, res) => {
     const studentId = req.user.id; // Assuming student ID is available on req.user
     try {
+      // Fetch incidents reported by the student
       const [incidents] = await pool.query(
-        'SELECT * FROM incidents WHERE reported_by = ? ORDER BY date_reported DESC',
+        'SELECT * FROM incident_reports WHERE reporter_id = ? ORDER BY date DESC',
         [studentId]
       );
+  
+      // Log the results for debugging
       console.log('Incidents:', incidents);
+      
+      
+      // Render the view with both incidents and their statuses
       res.render('incident/studentIncidentTracking', { incidents });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error retrieving incident reports');
     }
   });
+  
   
   // Route to render the user management page
 router.get('/user-management', async (req, res) => {

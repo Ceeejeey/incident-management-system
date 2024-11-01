@@ -68,6 +68,10 @@
       font-size: 0.9em;
     }
 
+    .badge-pending {
+      background-color: #b007ff;
+      color: #212529;
+    }
     .badge-in-progress {
       background-color: #ffc107;
       color: #212529;
@@ -106,7 +110,6 @@
 <body>
   <div class="container">
     <div class="back-button-container">
-
       <a href="/dashboards/student_dashboard" class="back-button">
         <i class="fas fa-arrow-left"></i> Back to Student Dashboard
       </a>
@@ -119,7 +122,7 @@
           <th>Description</th>
           <th>Date Reported</th>
           <th>Location</th>
-          <th>Severity</th>
+          <th>Category</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -128,12 +131,14 @@
         <% incidents.forEach(incident => { %>
         <tr>
           <td><%= incident.title %></td>
-          <td><%= incident.user_description %></td>
-          <td><%= new Date(incident.date_reported).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
+          <td><%= incident.description %></td>
+          <td><%= new Date(incident.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
           <td><%= incident.location %></td>
-          <td><%= incident.severity %></td>
+          <td><%= incident.category %></td>
           <td>
-            <% if (incident.status === 'in-progress') { %>
+            <% if (incident.status === 'pending') { %>
+              <span class="badge badge-status badge-pending">Pending</span>
+            <% } else if (incident.status === 'in-progress') { %>
             <span class="badge badge-status badge-in-progress">In Progress</span>
             <% } else if (incident.status === 'resolved') { %>
             <span class="badge badge-status badge-resolved">Resolved</span>
