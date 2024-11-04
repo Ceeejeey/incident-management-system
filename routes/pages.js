@@ -324,26 +324,6 @@ router.post('/assign-incident', authenticateToken, async (req, res) => {
     }
 });
 
-
-//notification route for staff
-router.get('/staff/notifications/unread', authenticateToken, async (req, res) => {
-    const staffId = req.user.id;
-
-    const [notifications] = await pool.query(`
-        SELECT * FROM notifications WHERE staff_id = ? AND is_read = FALSE ORDER BY timestamp DESC
-    `, [staffId]);
-
-    res.json(notifications);
-});
-
-// Route to mark a notification as read
-router.post('/staff/notifications/mark-as-read/:id', authenticateToken, async (req, res) => {
-    const notificationId = req.params.id;
-    await pool.query('UPDATE notifications SET is_read = TRUE WHERE notification_id = ?', [notificationId]);
-    res.status(200).send();
-});
-
-
 // Route to update incident status
 router.post('/staff/update-incident', authenticateToken, async (req, res) => {
     const { incidentId, updateDescription } = req.body;
@@ -470,7 +450,7 @@ router.get('/staff/assigned-incidents', authenticateToken, async (req, res) => {
     }
 });
 
-// Assuming Express and MySQL are set up
+//student incident tracking route
 router.get('/student/incidents', authenticateToken, async (req, res) => {
     const studentId = req.user.id; // Assuming student ID is available on req.user
     try {
@@ -486,6 +466,27 @@ router.get('/student/incidents', authenticateToken, async (req, res) => {
 
         // Render the view with both incidents and their statuses
         res.render('incident/studentIncidentTracking', { incidents });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving incident reports');
+    }
+});
+
+router.get('/staff/incidents', authenticateToken, async (req, res) => {
+    const staffId = req.user.id; // Assuming student ID is available on req.user
+    try {
+        // Fetch incidents reported by the student
+        const [incidents] = await pool.query(
+            'SELECT * FROM incident_reports WHERE reporter_id = ? ORDER BY date DESC',
+            [staffId]
+        );
+
+        // Log the results for debugging
+        console.log('Incidents:', incidents);
+
+
+        // Render the view with both incidents and their statuses
+        res.render('incident/staffIncidentTracking', { incidents });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error retrieving incident reports');
@@ -573,6 +574,44 @@ router.get('/student/notifications', authenticateToken, async (req, res) => {
     }
 });
 
+//notification route for student
+router.get('/staff/notifications', authenticateToken, async (req, res) => {
+    const staffId = req.user.id;
+
+    try {
+        const [notifications] = await pool.query(
+            `
+            SELECT 
+                n.notification_id, 
+                n.message, 
+                n.link, 
+                n.is_read, 
+                n.timestamp 
+            FROM 
+                notifications n
+            WHERE 
+                n.staff_id = ?
+            ORDER BY 
+                n.timestamp DESC
+            `,
+            [staffId]
+        );
+    
+        // Mark all notifications as read for the staff
+        await pool.query(
+            'UPDATE notifications SET is_read = TRUE WHERE staff_id = ?',
+            [staffId]
+        );
+    
+        console.log('Notifications:', notifications);
+        res.render('notifications/staff_notification', { notifications });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving notifications');
+    }
+    
+});
+
 router.get('/student/notifications/count', authenticateToken, async (req, res) => {
     const studentId = req.user.id;
 
@@ -580,6 +619,22 @@ router.get('/student/notifications/count', authenticateToken, async (req, res) =
         const [rows] = await pool.query(
             `SELECT COUNT(*) AS count FROM student_notifications WHERE student_id = ? AND is_read = 0`, // Assuming 'is_read' indicates whether it's read
             [studentId]
+        );
+
+        res.json({ count: rows[0].count });
+    } catch (error) {
+        console.error('Error fetching notification count:', error);
+        res.status(500).json({ count: 0 });
+    }
+});
+
+router.get('/staff/notifications/count', authenticateToken, async (req, res) => {
+    const staffId = req.user.id;
+
+    try {
+        const [rows] = await pool.query(
+            `SELECT COUNT(*) AS count FROM notifications WHERE staff_id = ? AND is_read = 0`,
+            [staffId]
         );
 
         res.json({ count: rows[0].count });

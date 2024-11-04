@@ -106,12 +106,12 @@
             background-color: #212529;
             color: #ffffff;
             font-weight: bold;
-            border: 1px solid #17a2b8; /* Light border to highlight */
+            border: 1px solid #17a2b8; 
             padding: 10px 15px;
         }
     
         .list-group-item-important:hover {
-            background-color: #17a2b8; /* Light blue hover effect */
+            background-color: #17a2b8; 
             color: #ffffff;
         }
     </style>
@@ -124,32 +124,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ms-auto">
 
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Messages <span class="badge bg-primary">3</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
-                        <li><a class="dropdown-item" href="#">Message 1</a></li>
-                        <li><a class="dropdown-item" href="#">Message 2</a></li>
-                        <li><a class="dropdown-item" href="#">Message 3</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-center" href="#">See All Messages</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        Notifications <span class="badge bg-warning" id="notificationCount">0</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" id="notificationsMenu">
-                        <!-- Notifications will be loaded here dynamically -->
-                    </ul>
-                </li>
-
+               
                 <form class="d-flex ms-3">
                     <input class="form-control search-bar me-2" type="search" placeholder="Search..."
                         aria-label="Search">
@@ -188,11 +163,11 @@
                 <a href="/incident/incidentReport" class="list-group-item list-group-item-action bg-dark">
                     <i class="fas fa-exclamation-circle me-2"></i> Incident Reporting
                 </a>
-                <a href="#incident-tracking" class="list-group-item list-group-item-action bg-dark">
+                <a href="/staff/incidents" class="list-group-item list-group-item-action bg-dark">
                     <i class="fas fa-chart-line me-2"></i> Incident Tracking
                 </a>
-                <a href="#notifications" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-bell me-2"></i> Notifications
+                <a href="/staff/notifications" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-bell me-2"></i> Notifications <span class="badge bg-danger" id="notificationCount">0</span>
                 </a>
                 <a href="/communication/staff_communication" class="list-group-item list-group-item-action bg-dark">
                     <i class="fas fa-comments me-2"></i> Communication Tools
@@ -231,55 +206,25 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        async function fetchNotifications() {
-            try {
-                const response = await fetch('/staff/notifications/unread');  // API endpoint to get unread notifications
-                const notifications = await response.json();
-    
-                // Update notification count badge
-                const notificationCountElem = document.getElementById('notificationCount');
-                notificationCountElem.textContent = notifications.length;
-    
-                // Update dropdown menu content
-                const notificationsMenu = document.getElementById('notificationsMenu');
-                notificationsMenu.innerHTML = '';
-    
-                if (notifications.length > 0) {
-                    notifications.forEach(notification => {
-                        const notificationItem = document.createElement('li');
-                        notificationItem.innerHTML = `
-                            <a class="dropdown-item" href="${notification.link}" onclick="markAsRead(${notification.notification_id})">
-                                ${notification.message}
-                            </a>
-                        `;
-                        notificationsMenu.appendChild(notificationItem);
-                    });
-    
-                    const divider = document.createElement('li');
-                    divider.innerHTML = '<hr class="dropdown-divider">';
-                    notificationsMenu.appendChild(divider);
-    
-                    const seeAllItem = document.createElement('li');
-                    seeAllItem.innerHTML = '<a class="dropdown-item text-center" href="/staff/notifications">See All Notifications</a>';
-                    notificationsMenu.appendChild(seeAllItem);
-                } else {
-                    notificationsMenu.innerHTML = '<li class="dropdown-item text-center">No new notifications</li>';
+        function fetchNotificationCount() {
+            $.ajax({
+                url: '/staff/notifications/count', // Create this route on the server to return the count
+                type: 'GET',
+                success: function(data) {
+                    const count = data.count || 0;
+                    $('#notificationCount').text(count > 0 ? count : '');
+                },
+                error: function(error) {
+                    console.error("Error fetching notification count:", error);
                 }
-            } catch (error) {
-                console.error('Error fetching notifications:', error);
-            }
+            });
         }
     
-        function markAsRead(notificationId) {
-            fetch(`/staff/notifications/mark-as-read/${notificationId}`, { method: 'POST' })
-                .then(() => fetchNotifications());  // Refresh notifications after marking as read
-        }
+        // Call fetchNotificationCount every 5 seconds
+        setInterval(fetchNotificationCount, 5000);
     
-        // Fetch notifications every 10 seconds
-        setInterval(fetchNotifications, 10000);
-    
-        // Initial fetch on page load
-        fetchNotifications();
+        // Initial call to set count when the page loads
+        fetchNotificationCount();
     </script>
     
 </body>
