@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Feedback</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* Base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f2f5f9;
+    }
+
+    /* Container styling */
+    .feedback-container {
+      width: 100%;
+      max-width: 500px;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .feedback-container h2 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* Form group styling */
+    .form-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    label {
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      background-color: #f9f9f9;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #007bff;
+      background-color: #fff;
+    }
+
+    /* Rating input styling */
+    .rating-container {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+
+    .rating-container input[type="number"] {
+      width: 50px;
+      text-align: center;
+    }
+
+    /* Textarea styling */
+    textarea {
+      resize: none;
+      min-height: 100px;
+    }
+
+    /* Button styling */
+    .btn-submit {
+      width: 100%;
+      padding: 0.75rem;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-submit:hover {
+      background: #0056b3;
+    }
+
+    /* Message styling */
+    .feedback-message {
+      font-size: 0.9rem;
+      color: #28a745;
+      margin-top: 1rem;
+    }
+
+    .error-message {
+      color: #dc3545;
+    }
+
+    .back-button-container {
+      text-align: left;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      font-size: 16px;
+      color: #6c757d;
+    }
+
+    .back-button i {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="feedback-container">
+    <div class="back-button-container">
+      <% if (role === 'student') { %>
+      <a href="/dashboards/student_dashboard" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Student Dashboard
+      </a>
+      <% } else { %>
+      <a href="/dashboards/staff_dashboard" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Staff Dashboard
+      </a>
+
+      <% } %>
+    </div>
+    <h2>Submit Feedback</h2>
+    <form action="/feedback" method="POST">
+      <input type="hidden" name="user_id" value="<%= userId %>">
+
+      <!-- Incident selection dropdown -->
+      <div class="form-group">
+        <label for="incident_id">Select Incident</label>
+        <select name="incident_id" id="incident_id" class="form-control" required>
+          <% incidents.forEach(incident => { %>
+          <option value="<%= incident.incident_id %>"><%= incident.title %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <!-- Rating selection -->
+      <div class="form-group">
+        <label for="rating">Rate Our Response (1-5)</label>
+        <div class="rating-container">
+          <input type="number" name="rating" id="rating" min="1" max="5" class="form-control" placeholder="1-5" required>
+        </div>
+      </div>
+
+      <!-- Comments section -->
+      <div class="form-group">
+        <label for="comments">Additional Comments</label>
+        <textarea name="comments" id="comments" rows="4" class="form-control" placeholder="Share your experience..."></textarea>
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit" class="btn-submit">Submit Feedback</button>
+
+      <!-- Feedback message if any -->
+      <% if (message) { %>
+      <p class="feedback-message <%= messageType === 'error' ? 'error-message' : '' %>"><%= message %></p>
+      <% } %>
+    </form>
+  </div>
+
+</body>
+
+</html>

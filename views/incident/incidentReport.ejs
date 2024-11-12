@@ -95,6 +95,10 @@
         .small-text a:hover {
             text-decoration: underline;
         }
+        #map {
+            height: 400px;
+            margin-bottom: 15px;
+        }
         .toast-container {
             position: fixed;
             top: 20px;
@@ -104,7 +108,6 @@
     </style>
 </head>
 <body>
-
     <div class="card">
         <div class="back-button-container">
             <% if (role === 'student') { %>
@@ -121,7 +124,15 @@
             <h2>Report an Incident</h2>
             <p>Provide details to help us address the issue.</p>
         </div>
+        
+        <!-- Google Map -->
+        <div id="map"></div>
+        
         <form action="/api/report-incident" method="POST" enctype="multipart/form-data" id="incidentForm">
+            <!-- Hidden fields for storing selected coordinates -->
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+
             <div class="form-control-icon">
                 <i class="fas fa-heading"></i>
                 <input type="text" class="form-control" id="title" name="title" placeholder="Incident Title" required>
@@ -133,10 +144,6 @@
             <div class="form-control-icon">
                 <i class="fas fa-calendar-alt"></i>
                 <input type="date" class="form-control" id="date" name="date" required>
-            </div>
-            <div class="form-control-icon">
-                <i class="fas fa-map-marker-alt"></i>
-                <input type="text" class="form-control" id="location" name="location" placeholder="Location of Incident" required>
             </div>
             <div class="form-control-icon">
                 <i class="fas fa-paperclip"></i>
@@ -156,28 +163,57 @@
                 <button type="submit" class="btn btn-primary">Submit Report</button>
             </div>
         </form>
-        <div class="small-text mt-3">
-            <p>Need assistance? <a href="/emergencyContacts/emergency_contacts">Contact Support</a></p>
-        </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div class="toast-container">
-        <div id="submitToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    Incident report submitted successfully!
+        <!-- Toast Notification -->
+        <div class="toast-container">
+            <div id="submitToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Incident report submitted successfully!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
 
+    <!-- Include Bootstrap JS and Google Maps API -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('incidentForm').addEventListener('submit', async (event) => {
-            event.preventDefault(); 
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0RxjWr1Chsnf_9FbzvYWdR3jsoZTgOXM&callback=initMap" async defer></script>
 
+    <script>
+        // Initialize Google Map
+        function initMap() {
+            const universityLocation = { lat: 8.654412978895445, lng: 81.21285877391897 };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: universityLocation,
+            });
+
+            let marker;
+
+            // Add marker on map click
+            map.addListener("click", (e) => {
+                const { lat, lng } = e.latLng;
+
+                // Remove existing marker if any
+                if (marker) marker.setMap(null);
+
+                // Place new marker
+                marker = new google.maps.Marker({
+                    position: e.latLng,
+                    map: map,
+                });
+
+                // Update hidden form fields with latitude and longitude
+                document.getElementById("latitude").value = lat();
+                document.getElementById("longitude").value = lng();
+            });
+        }
+
+        // Handle form submission and show toast notification
+        document.getElementById('incidentForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
             const formData = new FormData(event.target);
 
             try {
@@ -189,7 +225,7 @@
                 if (response.ok) {
                     var toast = new bootstrap.Toast(document.getElementById('submitToast'));
                     toast.show();
-                    event.target.reset(); // Reset form fields
+                    event.target.reset();
                 } else {
                     console.error('Error submitting the form');
                 }

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/config');
 const authenticateToken = require('../middlewares/authMiddleware');
-
+const bcrypt = require('bcryptjs');
 
 
 
@@ -274,16 +274,16 @@ router.get('/admin/review-incidents', authenticateToken, async (req, res) => {
 
 // Route to assign an incident report
 router.post('/assign-incident', authenticateToken, async (req, res) => {
-    const { reportId, staffId, severity, adminDescription } = req.body;
+    const { reportId, latitude, longitude, staffId, severity, adminDescription } = req.body;
     const dateNow = new Date();
 
-    try {
+    try {console.log('body',req.body);
         // Insert the incident and get the inserted incident_id
         const [result] = await pool.query(`
-            INSERT INTO incidents (reported_by, title, user_description, category, description, evidence, location, status, assigned_to, date_reported, last_updated, severity)
-            SELECT reporter_id, title, description, category, ?, evidence, location, 'in-progress', ?, ?, ?, ?
+            INSERT INTO incidents (reported_by, title, user_description, category, description, evidence, status, assigned_to, date_reported, last_updated, severity, latitude, longitude)
+            SELECT reporter_id, title, description, category, ?, evidence, 'in-progress', ?, ?, ?, ?, ?, ?
             FROM incident_reports WHERE id = ?
-        `, [adminDescription, staffId, dateNow, dateNow, severity, reportId]);
+        `, [adminDescription, staffId, dateNow, dateNow, severity, latitude, longitude, reportId]);
 
         const incidentId = result.insertId; // Get the newly inserted incident ID
 
@@ -424,12 +424,13 @@ router.get('/staff/assigned-incidents', authenticateToken, async (req, res) => {
                 i.user_description,
                 i.category,
                 i.description, 
-                i.evidence, 
-                i.location, 
+                i.evidence,  
                 i.status, 
                 i.date_reported, 
                 i.last_updated, 
-                i.severity, 
+                i.severity,
+                i.latitude,
+                i.longitude,
                 u.name AS reporter_name
             FROM 
                 incidents i
@@ -505,18 +506,20 @@ router.get('/user-management', async (req, res) => {
     }
 });
 
+// Route to render the incident tracking page for admins
 router.get('/admin/trackIncidents', authenticateToken, async (req, res) => {
     try {
         const [incidents] = await pool.query(`SELECT 
     incidents.incident_id,
     incidents.title,
-    incidents.location,
     incidents.user_description,
     incidents.category,
     incidents.description,
     incidents.evidence,
     incidents.status,
     incidents.severity,
+    incidents.latitude,
+    incidents.longitude,
     DATE_FORMAT(incidents.date_reported, '%Y-%m-%d') AS date_reported,
     DATE_FORMAT(incidents.last_updated, '%Y-%m-%d') AS last_updated,
     COALESCE(staff.name, 'Not Yet') AS assigned_staff_name,
@@ -529,6 +532,7 @@ JOIN
     users AS student ON incidents.reported_by = student.user_id AND student.role = 'student';
 `);
         res.render('incident/adminTrackIncidents', { incidents });
+        console.log('Incidents:', incidents);
     } catch (error) {
         console.error("Error fetching incidents:", error);
         res.status(500).send("Error loading incident tracking page");
@@ -643,7 +647,193 @@ router.get('/staff/notifications/count', authenticateToken, async (req, res) => 
         res.status(500).json({ count: 0 });
     }
 });
+// Route to render the Change Password page
+router.get('/change-password', authenticateToken ,async (req, res) => {
+    const userType = req.user.role; 
+    let dashboardUrl = '/dashboard';
+    if (userType === 'admin') {
+        dashboardUrl = '/dashboards/admin_dashboard';
+    } else if (userType === 'staff') {
+        dashboardUrl = '/dashboards/staff_dashboard';
+    } else if (userType === 'student') {
+        dashboardUrl = '/dashboards/student_dashboard';
+    }
 
+    console.log(dashboardUrl);
+    res.render('userManagement/changePassword', {
+        message: '',          // Initial empty message
+        messageType: '',      // Initial empty messageType
+        userType: userType,    // Pass the user type
+        dashboardUrl: dashboardUrl
+    });
+});
+
+// Route to handle the password change request
+router.post('/change-password', authenticateToken, async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword, userType } = req.body;
+    
+    if (newPassword !== confirmPassword) {
+        return res.render('userManagement/changePassword', {
+            message: 'Passwords do not match.',
+            messageType: 'error',
+            userType: userType
+        });
+    }
+
+    const userId = req.user.id;  // Assuming the user ID is available from the token/session
+
+    try {
+        // Query to get the current user's password
+        const [results] = await pool.query('SELECT password FROM users WHERE user_id = ?', [userId]);
+
+        if (results.length === 0) {
+            return res.render('userManagement/changePassword', {
+                message: 'User not found.',
+                messageType: 'error',
+                userType: userType
+            });
+        }
+
+        const user = results[0];
+
+        // Check if the current password matches
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+        if (!isMatch) {
+            return res.render('userManagement/changePassword', {
+                message: 'Current password is incorrect.',
+                messageType: 'error',
+                userType: userType
+            });
+        }
+
+        // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the password in the database
+        await pool.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedNewPassword, userId]);
+
+        // Success message after updating
+        res.render('userManagement/changePassword', {
+            message: 'Password updated successfully.',
+            messageType: 'success',
+            userType: userType
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.render('userManagement/changePassword', {
+            message: 'An error occurred. Please try again later.',
+            messageType: 'error',
+            userType: userType
+        });
+    }
+});
+
+router.get('/feedback', authenticateToken, async (req, res) => {
+    const userId = req.user.id;  // Assuming the user ID is available in the JWT token
+    const role = req.user.role;
+
+    try {
+        // Retrieve a list of incidents reported by the user
+        const [incidents] = await pool.query('SELECT incident_id, title FROM incidents WHERE reported_by = ?', [userId]);
+
+        console.log('Incidents:', incidents);
+        // If no incidents are found, return a message
+        if (incidents.length === 0) {
+            return res.render('feedback/feedback', {
+                incidents: [],
+                userId,
+                role,
+                message: 'No incidents found to provide feedback for.', // You can customize this message
+                messageType: 'error',
+            });
+        }
+
+        // Render feedback form with incidents
+        res.render('feedback/feedback', { 
+            incidents, 
+            userId,
+            role,
+            message: '' ,// Initial empty message if you need to show feedback after form submission
+            messageType: 'success',
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred. Please try again later.');
+    }
+});
+
+router.post('/feedback', authenticateToken, async (req, res) => {
+    const { incident_id, rating, comments } = req.body;  // Get feedback details from the form
+    const userId = req.user.id;  // Get user ID from JWT token
+    const role = req.user.role;
+    try {
+        // Insert the feedback into the database
+        await pool.query('INSERT INTO feedback (incident_id, user_id, rating, comments) VALUES (?, ?, ?, ?)', 
+            [incident_id, userId, rating, comments]);
+
+        // Retrieve a list of incidents reported by the user
+        const [incidents] = await pool.query('SELECT incident_id, title FROM incidents WHERE reported_by = ?', [userId]);
+            console.log('title',incidents.title)
+        // If no incidents found, send a message or an empty array
+        const message = incidents.length === 0 ? 'You have no incidents reported.' : 'Feedback submitted successfully!';
+        const messageType = incidents.length === 0 ? 'info' : 'success';
+
+        // Re-render the feedback form with the message, incidents (or empty), and user data
+        res.render('feedback/feedback', {
+            incidents,         // Pass incidents array (empty if none)
+            userId,
+            role,
+            message,           // Message for the user
+            messageType,       // Type of message (success/info)
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('An error occurred. Please try again later.');
+    }
+});
+
+// Route for admin to view feedback
+router.get('/admin/feedback', authenticateToken, async (req, res) => {
+    const userId = req.user.id;  // Assuming the user ID is available in the JWT token
+    const role = req.user.role;
+
+    try {
+        // Query to retrieve feedback data along with related incident and user info
+        const [feedbacks] = await pool.query(`
+            SELECT feedback.feedback_id, feedback.incident_id, feedback.user_id, feedback.rating, feedback.comments, feedback.submitted_at, 
+                   users.name AS user_name, incidents.description AS incident_description
+            FROM feedback
+            JOIN users ON feedback.user_id = users.user_id
+            JOIN incidents ON feedback.incident_id = incidents.incident_id
+            ORDER BY feedback.submitted_at DESC
+        `);
+
+        console.log('Feedbacks:', feedbacks);
+        // If no feedback is found, return a message
+        if (feedbacks.length === 0) {
+            return res.render('feedback/adminViewFeedback', {
+                feedbacks: [],
+                userId,
+                role,
+                message: 'No feedback found.', // You can customize this message
+            });
+        }
+
+        // Render the feedback view with data
+        res.render('feedback/adminViewFeedback', {
+            feedbacks,
+            userId,
+            role,
+            message: '' // Initial empty message, you can modify it based on further logic
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while retrieving feedback. Please try again later.');
+    }
+});
 //signout route
 router.get('/signout', (req, res) => {
     res.clearCookie('refreshToken');

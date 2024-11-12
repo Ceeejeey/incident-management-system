@@ -15,7 +15,7 @@
         }
         .container {
             margin-top: 40px;
-            max-width: 1200px;
+            max-width: 1300px;
             background: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -112,7 +112,6 @@
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Location</th>
                         <th>Category</th>
                         <th>Description</th>
                         <th>Reported Date</th>
@@ -125,7 +124,6 @@
                     <% incidents.forEach(incident => { %>
                         <tr>
                             <td><%= incident.title %></td>
-                            <td><%= incident.location %></td>
                             <td><%= incident.category %></td>
                             <td><%= incident.user_description %></td>
                             <td><%= new Date(incident.date_reported).toLocaleDateString() %></td>
