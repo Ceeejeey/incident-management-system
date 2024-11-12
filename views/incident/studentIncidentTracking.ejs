@@ -121,7 +121,7 @@
           <th>Title</th>
           <th>Description</th>
           <th>Date Reported</th>
-          <th>Location</th>
+          
           <th>Category</th>
           <th>Status</th>
         </tr>
@@ -133,7 +133,7 @@
           <td><%= incident.title %></td>
           <td><%= incident.description %></td>
           <td><%= new Date(incident.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
-          <td><%= incident.location %></td>
+         
           <td><%= incident.category %></td>
           <td>
             <% if (incident.status === 'pending') { %>

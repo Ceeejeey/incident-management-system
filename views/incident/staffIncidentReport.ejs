@@ -144,7 +144,7 @@
           <th>Title</th>
           <th>Description</th>
           <th>Date</th>
-          <th>Location</th>
+          
           <th>Category</th>
           <th>Reporter</th>
           <th>Action</th>
@@ -157,12 +157,14 @@
               <td><%= report.title %></td>
               <td><%= report.description %></td>
               <td><%= new Date(report.date_reported).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></td>
-              <td><%= report.location %></td>
+              
               <td><%= report.category %></td>
               <td><%= report.reporter_name %></td>
               <td class="btn-group">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal" data-id="<%= report.incident_id %>">Update Status</button>
                 <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resolveModal" data-id="<%= report.incident_id %>">Resolve Incident</button>
+                <!-- Button to view map -->
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#mapModal" data-lat="<%= report.latitude %>" data-lng="<%= report.longitude %>">View Location</button>
               </td>
             </tr>
           <% }) %>
@@ -172,8 +174,27 @@
           </tr>
         <% } %>
       </tbody>
+      
     </table>
   </div>
+  <!-- Map Modal -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mapModalLabel">Incident Location</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Map container -->
+        <div id="map" style="height: 400px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Toast Notifications -->
   <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
@@ -232,76 +253,133 @@
       </div>
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
+    
+    let map;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 8.654412978895445, lng: 81.21285877391897 }, 
+        zoom: 8,
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        const updateModal = document.getElementById('updateModal');
-        updateModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const incidentId = button.getAttribute('data-id');
-            document.getElementById('updateIncidentId').value = incidentId;
-        });
+      const updateModal = document.getElementById('updateModal');
+      const resolveModal = document.getElementById('resolveModal');
+      const mapModal = document.getElementById('mapModal');
+      
+      // Google Map variables
+      let map;
+      let marker;
 
-        const resolveModal = document.getElementById('resolveModal');
-        resolveModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const incidentId = button.getAttribute('data-id');
-            document.getElementById('resolveIncidentId').value = incidentId;
-        });
+      // Modal events for the update and resolve modals
+      updateModal.addEventListener('show.bs.modal', event => {
+          const button = event.relatedTarget;
+          const incidentId = button.getAttribute('data-id');
+          document.getElementById('updateIncidentId').value = incidentId;
+      });
 
-        document.getElementById('submitResolve').addEventListener('click', function () {
-            const incidentId = document.getElementById('resolveIncidentId').value;
-            const resolveDescription = document.getElementById('resolveDescription').value;
+      resolveModal.addEventListener('show.bs.modal', event => {
+          const button = event.relatedTarget;
+          const incidentId = button.getAttribute('data-id');
+          document.getElementById('resolveIncidentId').value = incidentId;
+      });
 
-            fetch('/staff/resolve-incident', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ incidentId, resolveDescription })
-            })
-            .then(response => {
-                if (response.ok) {
-                  var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
-                  toast.show();
-                    const row = document.querySelector(`tr[data-incident-id="${incidentId}"]`);
-                    if (row) {
-                        row.classList.add('fade-out');
-                        setTimeout(() => row.remove(), 500);
-                    }
-                    bootstrap.Modal.getInstance(resolveModal).hide();
-                    
-                } else {
-                    alert('Error marking incident as resolved.');
-                }
-            })
-            .catch(console.error);
-        });
-
-        document.getElementById('submitUpdate').addEventListener('click', function () {
-            const incidentId = document.getElementById('updateIncidentId').value;
-            const updateDescription = document.getElementById('updateDescription').value;
-
-            fetch('/staff/update-incident', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ incidentId, updateDescription })
-            })
-            .then(response => {
-                if (response.ok) {
-                  var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
-                  toast.show();
-                    bootstrap.Modal.getInstance(updateModal).hide();
-                    
-                } else {
-                    alert('Error updating incident.');
-                }
-            })
-            .catch(console.error);
-        });
+      // Event for the map modal
+      mapModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const lat = parseFloat(button.getAttribute('data-lat'));
+        const lng = parseFloat(button.getAttribute('data-lng'));
+        console.log("Latitude:", lat, "Longitude:", lng);
+        if (isNaN(lat) || isNaN(lng)) {
+            console.error("Invalid latitude or longitude values.");
+            return; 
+        }
+        initializeMap(lat, lng);
     });
 
-   
-  </script>
+      // Initialize the Google Map
+      function initializeMap(lat, lng) {
+          
+          console.log(lat, lng);
+          if (map) {
+              map.setCenter({ lat, lng });
+              marker.setPosition({ lat, lng });
+          } else {
+              map = new google.maps.Map(document.getElementById("map"), {
+                  center: { lat, lng },
+                  zoom: 15,
+              });
+
+              marker = new google.maps.Marker({
+                  position: { lat, lng },
+                  map: map,
+                  title: 'Incident Location'
+              });
+          }
+      }
+
+      // Close map modal and reset map
+      mapModal.addEventListener('hidden.bs.modal', () => {
+          map = null;
+          marker = null;
+      });
+
+      document.getElementById('submitResolve').addEventListener('click', function () {
+          const incidentId = document.getElementById('resolveIncidentId').value;
+          const resolveDescription = document.getElementById('resolveDescription').value;
+
+          fetch('/staff/resolve-incident', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ incidentId, resolveDescription })
+          })
+          .then(response => {
+              if (response.ok) {
+                var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
+                toast.show();
+                  const row = document.querySelector(`tr[data-incident-id="${incidentId}"]`);
+                  if (row) {
+                      row.classList.add('fade-out');
+                      setTimeout(() => row.remove(), 500);
+                  }
+                  bootstrap.Modal.getInstance(resolveModal).hide();
+              } else {
+                  alert('Error marking incident as resolved.');
+              }
+          })
+          .catch(console.error);
+      });
+
+      document.getElementById('submitUpdate').addEventListener('click', function () {
+          const incidentId = document.getElementById('updateIncidentId').value;
+          const updateDescription = document.getElementById('updateDescription').value;
+
+          fetch('/staff/update-incident', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ incidentId, updateDescription })
+          })
+          .then(response => {
+              if (response.ok) {
+                var toast = new bootstrap.Toast(document.getElementById('toastNotification'));
+                toast.show();
+                  bootstrap.Modal.getInstance(updateModal).hide();
+              } else {
+                  alert('Error updating incident.');
+              }
+          })
+          .catch(console.error);
+      });
+    });
+</script>
+
+<
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0RxjWr1Chsnf_9FbzvYWdR3jsoZTgOXM&callback=initMap"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

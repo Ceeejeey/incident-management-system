@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Feedback</title>
+  <!-- Link to Bootstrap for styling -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Link to custom styles for additional design tweaks -->
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Body Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    /* Header Styling */
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 10px;
+    }
+
+    p.text-muted {
+      font-size: 1rem;
+      color: #777;
+    }
+
+    /* Table Styling */
+    .table {
+      margin-top: 20px;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: #f2f2f2;
+    }
+
+    .table th, .table td {
+      padding: 1.2rem;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .table th {
+      background-color: #000000;
+      color: #fff;
+    }
+
+    .table td {
+      background-color: #fff;
+    }
+
+    .table-bordered {
+      border: 1px solid #ddd;
+    }
+
+    /* Action Buttons */
+    .btn {
+      padding: 8px 15px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-right: 10px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+    }
+
+    .btn-success:hover, .btn-danger:hover {
+      opacity: 0.8;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-size: 1.1rem;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+      opacity: 0.9;
+    }
+
+    /* Back to Dashboard Button Styling */
+    .row.mt-5 {
+      margin-top: 30px;
+    }
+
+    /* Table responsiveness */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 768px) {
+      .table th, .table td {
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        font-size: 0.8rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      p.text-muted {
+        font-size: 0.9rem;
+      }
+    }
+
+    .back-button-container {
+      text-align: left;
+      margin-bottom: 30px;
+      margin-left: 80px;
+    }
+
+    .back-button {
+      font-size: 16px;
+      color: #6c757d;
+    }
+
+    .back-button i {
+      margin-right: 5px;
+    }
+
+    /* Centering and adjusting the table container */
+    .table-container {
+      max-width: 100%;
+      width: 90%; /* Make the width more compact */
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid">
+    
+
+    <!-- Admin Dashboard Heading -->
+    <div class="row mt-5">
+      <div class="back-button-container">
+        <a href="/dashboards/admin_dashboard" class="back-button">
+          <i class="fas fa-arrow-left"></i> Back to Administrator Dashboard
+        </a>
+      </div>
+      <div class="col-12 text-center">
+        <h2>User Feedback</h2>
+        <p class="text-muted">Below is the feedback submitted by users regarding their incidents.</p>
+      </div>
+    </div>
+
+    <!-- Feedback Table Container -->
+    <div class="table-container">
+      <!-- Feedback Table -->
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered shadow-sm">
+          <thead class="thead-light">
+            <tr>
+              <th>Incident ID</th>
+              <th>User</th>
+              <th>Rating</th>
+              <th>Comments</th>
+              <th>Submitted At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% feedbacks.forEach(function(feedback) { %>
+              <tr>
+                <td><%= feedback.incident_id %></td>
+                <td><%= feedback.user_name %></td>
+                <td><%= feedback.rating %> / 5</td>
+                <td><%= feedback.comments %></td>
+                <td><%= new Date(feedback.submitted_at).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to Bootstrap JS (Optional for responsive elements) -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

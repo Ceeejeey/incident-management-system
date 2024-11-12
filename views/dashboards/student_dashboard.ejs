@@ -2,225 +2,236 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Incident Management Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Incident Management Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-   
-   <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            padding-top: 70px;
-        }
-
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f8f9fa;
+        padding-top: 70px;
+        /* Keep the image fixed during scrolling */
+        color: #343a40;
+        /* Text color to contrast with the background */
+      }
+  
+      #page-content-wrapper {
+        flex-grow: 1;
+        padding: 20px;
+        width:100%;
+        height: 100vh;
         
-        .navbar {
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1030;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+        margin-left: 250px; /* This ensures the content starts after the sidebar */
+        margin-top: 50px; /* This ensures the content starts below the navbar */
+        background-color: rgba(255, 255, 255, 0.8);
+        /* Add a slight opacity to the background to make content readable */
+        border-radius: 10px;
+        /* Optional: smooth corners for the content area */
+      }
+  
+      .navbar {
+        width: 100%;
+        position: fixed;
+        top: 0;
+        z-index: 1030;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+  
+      #wrapper {
+        display: flex;
+        width: 100%;
+      }
+  
+      #sidebar-wrapper {
+        width: 250px;
+        background-color: #343a40;
+        min-height: 100vh;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        z-index: 1000;
+      }
+  
+      #sidebar-wrapper .sidebar-heading {
+        font-size: 1.5rem;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+      }
+  
+      #sidebar-wrapper .list-group-item {
+        background-color: #444444;
+        color: white;
+        padding: 0.75rem 1.25rem;
+      }
+  
+      #sidebar-wrapper .list-group-item:hover {
+        background-color: #495057;
+      }
+  
+      .greeting {
+        background-color: #515151;
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        margin-top: -40px;
+      }
+  
+      .container-fluid h1 {
+        font-weight: bold;
+        color: #343a40;
+      }
+  
+      .navbar-light .navbar-nav .nav-link {
+        color: #343a40;
+        margin-left: 15px;
+      }
+  
+      .navbar-light .navbar-nav .nav-link:hover {
+        color: #007bff;
+      }
+  
+      .dropdown-menu {
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+  
+      .search-bar {
+        width: 200px;
+        border-radius: 4px;
+      }
+  
+      .navbar-brand {
+        font-weight: bold;
+        color: #343a40;
+      }
+      .image {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
 
-        #wrapper {
-            display: flex;
-            width: 100%;
-        }
-
-        #sidebar-wrapper {
-            width: 250px;
-            background-color: #343a40;
-            min-height: 100vh;
-            position: fixed;
-            top: 56px;
-            left: 0;
-            z-index: 1000;
-        }
-
-        #page-content-wrapper {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: 250px;
-            margin-top: 56px;
-        }
-
-        #sidebar-wrapper .sidebar-heading {
-            font-size: 1.5rem;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        #sidebar-wrapper .list-group-item {
-            background-color: #343a40;
-            color: white;
-            padding: 0.75rem 1.25rem;
-        }
-
-        #sidebar-wrapper .list-group-item:hover {
-            background-color: #495057;
-        }
-
-        .greeting {
-            background-color: #007bff;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            margin-top: -40px;
-        }
-
-        .container-fluid h1 {
-            font-weight: bold;
-            color: #343a40;
-        }
-
-
-        .navbar-light .navbar-nav .nav-link {
-            color: #343a40;
-            margin-left: 15px;
-        }
-
-        .navbar-light .navbar-nav .nav-link:hover {
-            color: #007bff;
-        }
-
-
-        .dropdown-menu {
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-
-        .search-bar {
-            width: 200px;
-            border-radius: 4px;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            color: #343a40;
-        }
-    </style>
+  </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <h3 class="navbar-brand ms-3">Student Dashboard</h3>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ms-auto">
+  <!-- Background image container -->
+  <div id="background-wrapper"></div>
 
-                <form class="d-flex ms-3">
-                    <input class="form-control search-bar me-2" type="search" placeholder="Search..."
-                        aria-label="Search">
-                    <button class="btn btn-primary" type="submit">Search</button>
-                </form>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <h3 class="navbar-brand ms-3">Student Dashboard</h3>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-auto">
 
-                <!-- Profile dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <img src="path/to/profile-pic.jpg" alt="Profile" class="rounded-circle" width="30" height="30">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="/signout">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </nav>
+       
 
-    <div class="d-flex" id="wrapper">
-        <!-- Sidebar -->
-        <div class="bg-dark" id="sidebar-wrapper">
-            <div class="sidebar-heading">Dashboard</div>
-            <div class="list-group list-group-flush">
-                <a href="/incident/incidentReport" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-exclamation-circle me-2"></i> Incident Reporting
-                </a>
-                <a href="/student/incidents" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-chart-line me-2"></i> Incident Tracking
-                </a>
-                <a href="/student/notifications" class="list-group-item list-group-item-action bg-dark d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-bell me-2"></i> Notifications</span>
-                    <span id="notification-count" class="badge bg-danger rounded-pill">0</span>
-                </a>
-                
-                <a href="/emergencyContacts/emergency_contacts" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-phone-alt me-2"></i> Emergency Contacts
-                </a>
-                <a href="/communication/chat" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-comments me-2"></i> Communication Tools
-                </a>
-                <a href="#training-modules" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-book-reader me-2"></i> Training Modules
-                </a>
-                <a href="#feedback" class="list-group-item list-group-item-action bg-dark">
-                    <i class="fas fa-comment-dots me-2"></i> Feedback
-                </a>
-            </div>
-        </div>
+        <!-- Profile dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="./default.jpg" alt="Profile" class="rounded-circle" width="30" height="30">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li><a class="dropdown-item" href="/change-password">Change Password</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item" href="/signout">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    <div class="bg-dark" id="sidebar-wrapper">
+      <div class="sidebar-heading">Dashboard</div>
+      <div class="list-group list-group-flush">
+        <a href="/incident/incidentReport" class="list-group-item list-group-item-action bg-dark">
+          <i class="fas fa-exclamation-circle me-2"></i> Incident Reporting
+        </a>
+        <a href="/student/incidents" class="list-group-item list-group-item-action bg-dark">
+          <i class="fas fa-chart-line me-2"></i> Incident Tracking
+        </a>
+        <a href="/student/notifications" class="list-group-item list-group-item-action bg-dark d-flex justify-content-between align-items-center">
+          <span><i class="fas fa-bell me-2"></i> Notifications</span>
+          <span id="notification-count" class="badge bg-danger rounded-pill">0</span>
+        </a>
+        <a href="/emergencyContacts/emergency_contacts" class="list-group-item list-group-item-action bg-dark">
+          <i class="fas fa-phone-alt me-2"></i> Emergency Contacts
+        </a>
         
-
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <div class="container-fluid">
-                <!-- Greeting message -->
-                <div class="greeting">
-                    <h2>Hello, <%= user.name %>!</h2>
-                    <p>Welcome back to your dashboard. Here you can manage your incidents and stay updated.</p>
-                </div>
-
-                
-
-                <div id="incident-reporting"></div>
-                <div id="incident-tracking"></div>
-                <div id="notifications"></div>
-                <div id="emergency-contacts"></div>
-                <div id="communication-tools"></div>
-                <div id="training-modules"></div>
-                <div id="feedback"></div>
-
-            </div>
-        </div>
+        <a href="/feedback" class="list-group-item list-group-item-action bg-dark">
+          <i class="fas fa-comment-dots me-2"></i> Feedback
+        </a>
+      </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Function to fetch the notification count
-        function fetchNotificationCount() {
-            $.ajax({
-                url: '/student/notifications/count', // Create this route on the server to return the count
-                type: 'GET',
-                success: function(data) {
-                    const count = data.count || 0;
-                    $('#notification-count').text(count > 0 ? count : '');
-                },
-                error: function(error) {
-                    console.error("Error fetching notification count:", error);
-                }
-            });
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        <div class="container-fluid">
+          <!-- Greeting message -->
+          <div class="greeting">
+            <h2>Hello, <%= user.name %>!</h2>
+            <p>Welcome back to your dashboard. Here you can manage your incidents and stay updated.</p>
+          </div>
+          
+          <img src="./dasboard3.jpeg" alt="" class="image">
+
+          
+  
+        </div>
+      </div>
+    </div>
+  
+        <div id="incident-reporting"></div>
+        <div id="incident-tracking"></div>
+        <div id="notifications"></div>
+        <div id="emergency-contacts"></div>
+        <div id="communication-tools"></div>
+        <div id="training-modules"></div>
+        <div id="feedback"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+
+    
+    
+    // Function to fetch the notification count
+    function fetchNotificationCount() {
+      $.ajax({
+        url: '/student/notifications/count', // Create this route on the server to return the count
+        type: 'GET',
+        success: function(data) {
+          const count = data.count || 0;
+          $('#notification-count').text(count > 0 ? count : '');
+        },
+        error: function(error) {
+          console.error("Error fetching notification count:", error);
         }
-    
-        // Call fetchNotificationCount every 5 seconds
-        setInterval(fetchNotificationCount, 5000);
-    
-        // Initial call to set count when the page loads
-        fetchNotificationCount();
-    </script>
-    
+      });
+    }
+
+    // Call fetchNotificationCount every 5 seconds
+    setInterval(fetchNotificationCount, 5000);
+
+    // Initial call to set count when the page loads
+    fetchNotificationCount();
+  </script>
+
 </body>
 
 </html>
