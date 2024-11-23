@@ -834,6 +834,31 @@ router.get('/admin/feedback', authenticateToken, async (req, res) => {
         res.status(500).send('An error occurred while retrieving feedback. Please try again later.');
     }
 });
+
+//route for student resolved incidents chart
+router.get('/student/resolved-incidents', authenticateToken, async (req, res) => {
+    try {
+        // Fetch daily resolved incident counts for all users
+        const [incidents] = await pool.query(
+            `SELECT date AS date, COUNT(*) AS count
+             FROM incident_reports
+             WHERE status = "resolved"
+             GROUP BY date
+             ORDER BY date DESC`
+        );
+
+        // Log for debugging (optional, remove in production)
+        console.log('Resolved Incidents:', incidents);
+
+        // Return the results as JSON directly (no need to wrap in an additional object)
+        res.status(200).json(incidents);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error retrieving resolved incidents');
+    }
+});
+
+
 //signout route
 router.get('/signout', (req, res) => {
     res.clearCookie('refreshToken');

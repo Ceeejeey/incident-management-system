@@ -41,7 +41,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/", require("./routes/pages"));
 app.use("/api", require("./controllers/authController"));
 app.use("/api", require("./controllers/incidentController"));
-
+app.use("/api", require("./controllers/emergancy_contact_list_controller"));
 
 // Socket.io setup
 const userSockets = {};
