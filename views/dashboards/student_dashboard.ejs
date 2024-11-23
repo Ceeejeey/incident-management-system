@@ -22,7 +22,7 @@
         flex-grow: 1;
         padding: 20px;
         width:100%;
-        height: 100vh;
+        height: 80vh;
         
         margin-left: 250px; /* This ensures the content starts after the sidebar */
         margin-top: 50px; /* This ensures the content starts below the navbar */
@@ -166,6 +166,9 @@
           <span id="notification-count" class="badge bg-danger rounded-pill">0</span>
         </a>
         <a href="/emergencyContacts/emergency_contacts" class="list-group-item list-group-item-action bg-dark">
+          <i class="fas fa-solid fa-envelope me-2"></i> Chat With Staff
+        </a>
+        <a href="/api/emergency-contacts-list" class="list-group-item list-group-item-action bg-dark">
           <i class="fas fa-phone-alt me-2"></i> Emergency Contacts
         </a>
         
@@ -184,9 +187,8 @@
             <p>Welcome back to your dashboard. Here you can manage your incidents and stay updated.</p>
           </div>
           
-          <img src="./dasboard3.jpeg" alt="" class="image">
-
-          
+          <img src="./incident managment system image 1.jpg" alt="" class="image">
+    
   
         </div>
       </div>
@@ -205,6 +207,7 @@
   </div>
 
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
 
@@ -231,6 +234,7 @@
     // Initial call to set count when the page loads
     fetchNotificationCount();
   </script>
+  
 
 </body>
 
